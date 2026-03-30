@@ -3,84 +3,123 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chat Online</title>
+    <title>VIP Chat</title>
     <style>
-        body { font-family: sans-serif; display: flex; flex-direction: column; height: 95vh; margin: 0; padding: 10px; }
-        #messages { flex: 1; overflow-y: auto; border: 1px solid #ddd; padding: 10px; background: #fff; margin-bottom: 10px; border-radius: 8px; }
-        .msg-box { margin-bottom: 15px; padding: 8px; border-radius: 5px; background: #e9ecef; }
-        img { max-width: 100%; border-radius: 8px; margin-top: 5px; display: block; }
-        input { padding: 10px; margin-bottom: 5px; border: 1px solid #ccc; border-radius: 5px; }
-        button { padding: 10px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; }
-        .hidden { display: none !important; }
-        #closed-msg { text-align: center; margin-top: 50px; color: red; }
+        :root { --primary: #8a2be2; --bg: #0f0f12; }
+        body { background: var(--bg); color: #fff; font-family: sans-serif; margin: 0; display: flex; justify-content: center; height: 100vh; }
+        #app { width: 100%; max-width: 500px; display: flex; flex-direction: column; background: #16161d; }
+        #chat-window { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 10px; }
+        .msg { background: #252530; padding: 12px; border-radius: 15px; max-width: 80% }
+        .msg b { color: var(--primary); display: block; font-size: 12px; }
+        .input-area { background: #1f1f29; padding: 15px; display: flex; gap: 8px; flex-wrap: wrap; }
+        input { flex: 1; background: #2c2c3a; border: none; padding: 12px; border-radius: 10px; color: #fff; outline: none; }
+        button { background: var(--primary); border: none; padding: 10px; border-radius: 10px; color: white; cursor: pointer; }
+        img, video { width: 100%; border-radius: 10px; margin-top: 5px; }
+        audio { width: 100%; margin-top: 5px; }
+        .hidden { display: none; }
     </style>
 </head>
 <body>
 
-    <div id="chat-ui" class="hidden">
-        <div id="messages"></div>
-        <input type="text" id="username" placeholder="Seu nome...">
-        <input type="text" id="message" placeholder="Mensagem ou link da imagem...">
-        <button id="sendBtn">Enviar Mensagem</button>
+<div id="app">
+    <div id="chat-window"></div>
+    <div id="closed" class="hidden" style="text-align: center; padding: 50px;">
+        <h2>Chat Fechado 🔒</h2>
     </div>
-
-    <div id="closed-msg" class="hidden">
-        <h1>O Chat está fechado no momento!</h1>
-        <p>Aguarde o administrador abrir a sala.</p>
+    
+    <div class="input-area" id="controls">
+        <input type="text" id="name" placeholder="Nick" style="max-width: 80px;">
+        <input type="text" id="msg" placeholder="Mensagem, link de foto ou vídeo...">
+        <button id="send">🚀</button>
+        <button id="record" style="background: #ff4757;">🎤 Gravar</button>
     </div>
+</div>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getDatabase, ref, push, onValue, limitToLast, query } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getDatabase, ref, push, onValue, query, limitToLast } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyCbLVtiN0JlJ5qjMWyYtwUHEs8NP6DTaPM",
-            authDomain: "chat-4b3e3.firebaseapp.com",
-            databaseURL: "https://chat-4b3e3-default-rtdb.firebaseio.com",
-            projectId: "chat-4b3e3",
-            storageBucket: "chat-4b3e3.firebasestorage.app",
-            messagingSenderId: "445315176420",
-            appId: "1:445315176420:web:cc468a5c89b8706a7059f1"
-        };
+    const firebaseConfig = {
+        apiKey: "AIzaSyCbLVtiN0JlJ5qjMWyYtwUHEs8NP6DTaPM",
+        authDomain: "chat-4b3e3.firebaseapp.com",
+        databaseURL: "https://chat-4b3e3-default-rtdb.firebaseio.com",
+        projectId: "chat-4b3e3",
+        storageBucket: "chat-4b3e3.firebasestorage.app",
+        messagingSenderId: "445315176420",
+        appId: "1:445315176420:web:cc468a5c89b8706a7059f1"
+    };
 
-        const app = initializeApp(firebaseConfig);
-        const db = getDatabase(app);
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
 
-        // Verificar se chat está ON ou OFF
-        onValue(ref(db, 'chatStatus'), (snapshot) => {
-            const isOpen = snapshot.val();
-            document.getElementById('chat-ui').classList.toggle('hidden', !isOpen);
-            document.getElementById('closed-msg').classList.toggle('hidden', isOpen);
-        });
+    // Verificar Status do Admin
+    onValue(ref(db, 'chatStatus'), (snap) => {
+        document.getElementById('controls').classList.toggle('hidden', !snap.val());
+        document.getElementById('closed').classList.toggle('hidden', snap.val());
+    });
 
-        // Enviar Mensagem
-        document.getElementById('sendBtn').onclick = () => {
-            const user = document.getElementById('username').value || "Anônimo";
-            const text = document.getElementById('message').value;
-            if(text.trim() !== "") {
-                push(ref(db, 'messages'), { user, text, time: Date.now() });
-                document.getElementById('message').value = "";
+    // Enviar Mensagem
+    document.getElementById('send').onclick = () => {
+        const text = document.getElementById('msg').value;
+        const user = document.getElementById('name').value || "User";
+        if(text) {
+            push(ref(db, 'messages'), { user, text, type: 'text' });
+            document.getElementById('msg').value = "";
+        }
+    };
+
+    // Renderizar Mensagens (Texto, Imagem, Vídeo)
+    onValue(query(ref(db, 'messages'), limitToLast(20)), (snap) => {
+        const win = document.getElementById('chat-window');
+        win.innerHTML = "";
+        snap.forEach(child => {
+            const m = child.val();
+            const div = document.createElement('div');
+            div.className = 'msg';
+            
+            let content = `<b>${m.user}</b>`;
+            if (m.text.includes('.mp4') || m.text.includes('video')) {
+                content += `<video src="${m.text}" controls></video>`;
+            } else if (m.text.match(/\.(jpeg|jpg|gif|png|webp)/)) {
+                content += `<img src="${m.text}">`;
+            } else if (m.type === 'audio') {
+                content += `<audio src="${m.text}" controls></audio>`;
+            } else {
+                content += `<span>${m.text}</span>`;
             }
-        };
-
-        // Mostrar Mensagens
-        const recentMessages = query(ref(db, 'messages'), limitToLast(50));
-        onValue(recentMessages, (snapshot) => {
-            const container = document.getElementById('messages');
-            container.innerHTML = "";
-            snapshot.forEach((child) => {
-                const data = child.val();
-                const div = document.createElement('div');
-                div.className = "msg-box";
-                
-                // Verifica se é imagem (termina em jpg, png, gif, etc)
-                const isImg = data.text.match(/\.(jpeg|jpg|gif|png|webp)$/i);
-                
-                div.innerHTML = `<strong>${data.user}:</strong> ${isImg ? `<br><img src="${data.text}">` : data.text}`;
-                container.appendChild(div);
-            });
-            container.scrollTop = container.scrollHeight;
+            
+            div.innerHTML = content;
+            win.appendChild(div);
         });
-    </script>
+        win.scrollTop = win.scrollHeight;
+    });
+
+    // Sistema de Áudio (Simplificado via Base64 para evitar servidor de storage)
+    let recorder;
+    document.getElementById('record').onmousedown = async () => {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        recorder = new MediaRecorder(stream);
+        let chunks = [];
+        recorder.ondataavailable = e => chunks.push(e.data);
+        recorder.onstop = () => {
+            const blob = new Blob(chunks, { type: 'audio/ogg' });
+            const reader = new FileReader();
+            reader.readAsDataURL(blob);
+            reader.onloadend = () => {
+                push(ref(db, 'messages'), { 
+                    user: document.getElementById('name').value || "User", 
+                    text: reader.result, 
+                    type: 'audio' 
+                });
+            };
+        };
+        recorder.start();
+        document.getElementById('record').innerText = "🔴 Gravando...";
+    };
+    document.getElementById('record').onmouseup = () => {
+        recorder.stop();
+        document.getElementById('record').innerText = "🎤 Gravar";
+    };
+</script>
 </body>
 </html>
