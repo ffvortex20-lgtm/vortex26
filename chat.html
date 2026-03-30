@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Online</title>
+    <style>
+        body { font-family: sans-serif; display: flex; flex-direction: column; height: 95vh; margin: 0; padding: 10px; }
+        #messages { flex: 1; overflow-y: auto; border: 1px solid #ddd; padding: 10px; background: #fff; margin-bottom: 10px; border-radius: 8px; }
+        .msg-box { margin-bottom: 15px; padding: 8px; border-radius: 5px; background: #e9ecef; }
+        img { max-width: 100%; border-radius: 8px; margin-top: 5px; display: block; }
+        input { padding: 10px; margin-bottom: 5px; border: 1px solid #ccc; border-radius: 5px; }
+        button { padding: 10px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        .hidden { display: none !important; }
+        #closed-msg { text-align: center; margin-top: 50px; color: red; }
+    </style>
+</head>
+<body>
+
+    <div id="chat-ui" class="hidden">
+        <div id="messages"></div>
+        <input type="text" id="username" placeholder="Seu nome...">
+        <input type="text" id="message" placeholder="Mensagem ou link da imagem...">
+        <button id="sendBtn">Enviar Mensagem</button>
+    </div>
+
+    <div id="closed-msg" class="hidden">
+        <h1>O Chat está fechado no momento!</h1>
+        <p>Aguarde o administrador abrir a sala.</p>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getDatabase, ref, push, onValue, limitToLast, query } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCbLVtiN0JlJ5qjMWyYtwUHEs8NP6DTaPM",
+            authDomain: "chat-4b3e3.firebaseapp.com",
+            databaseURL: "https://chat-4b3e3-default-rtdb.firebaseio.com",
+            projectId: "chat-4b3e3",
+            storageBucket: "chat-4b3e3.firebasestorage.app",
+            messagingSenderId: "445315176420",
+            appId: "1:445315176420:web:cc468a5c89b8706a7059f1"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        // Verificar se chat está ON ou OFF
+        onValue(ref(db, 'chatStatus'), (snapshot) => {
+            const isOpen = snapshot.val();
+            document.getElementById('chat-ui').classList.toggle('hidden', !isOpen);
+            document.getElementById('closed-msg').classList.toggle('hidden', isOpen);
+        });
+
+        // Enviar Mensagem
+        document.getElementById('sendBtn').onclick = () => {
+            const user = document.getElementById('username').value || "Anônimo";
+            const text = document.getElementById('message').value;
+            if(text.trim() !== "") {
+                push(ref(db, 'messages'), { user, text, time: Date.now() });
+                document.getElementById('message').value = "";
+            }
+        };
+
+        // Mostrar Mensagens
+        const recentMessages = query(ref(db, 'messages'), limitToLast(50));
+        onValue(recentMessages, (snapshot) => {
+            const container = document.getElementById('messages');
+            container.innerHTML = "";
+            snapshot.forEach((child) => {
+                const data = child.val();
+                const div = document.createElement('div');
+                div.className = "msg-box";
+                
+                // Verifica se é imagem (termina em jpg, png, gif, etc)
+                const isImg = data.text.match(/\.(jpeg|jpg|gif|png|webp)$/i);
+                
+                div.innerHTML = `<strong>${data.user}:</strong> ${isImg ? `<br><img src="${data.text}">` : data.text}`;
+                container.appendChild(div);
+            });
+            container.scrollTop = container.scrollHeight;
+        });
+    </script>
+</body>
+</html>
