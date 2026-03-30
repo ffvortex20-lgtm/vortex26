@@ -3,38 +3,254 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bio Link Dinâmico</title>
+    <title>Bio Link Pro</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <script src="https://kit.fontawesome.com/64d58efce2.js" crossorigin="anonymous"></script>
     
     <style>
         :root {
-            --primary: #6366f1;
-            --bg: #0f172a;
-            --card: #1e293b;
-            --text: #f8fafc;
+            --primary: #8b5cf6;
+            --bg-admin: #1e293b;
+            --bg-bio: #1a1033; /* Roxo escuro do fundo da foto */
+            --card-bio: #1e1b2e;
+            --text: #ffffff;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
-        body { background-color: var(--bg); color: var(--text); min-height: 100vh; display: flex; justify-content: center; }
 
-        /* --- ESTILO DO ADMIN --- */
-        #admin-panel { width: 100%; max-width: 600px; padding: 40px 20px; }
-        .card { background: var(--card); padding: 25px; border-radius: 16px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.3); margin-bottom: 20px; }
-        h2 { margin-bottom: 20px; font-size: 1.5rem; color: var(--primary); }
-        label { display: block; margin-bottom: 5px; font-size: 0.9rem; opacity: 0.8; }
-        input { width: 100%; padding: 12px; margin-bottom: 15px; border-radius: 8px; border: 1px solid #334155; background: #0f172a; color: white; outline: none; }
-        input:focus { border-color: var(--primary); }
-        .grid-social { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        button { width: 100%; padding: 15px; border-radius: 8px; border: none; font-weight: 600; cursor: pointer; transition: 0.3s; }
-        .btn-add { background: #334155; color: white; margin-bottom: 10px; }
-        .btn-add:hover { background: #475569; }
-        .btn-generate { background: var(--primary); color: white; font-size: 1.1rem; }
-        .btn-generate:hover { background: #4f46e5; transform: translateY(-2px); }
+        /* --- ESTILO DO PAINEL ADMIN (Fica oculto quando visualiza a bio) --- */
+        #admin-panel { 
+            background-color: var(--bg-admin); 
+            min-height: 100vh; 
+            padding: 40px 20px; 
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .admin-card { background: #334155; width: 100%; max-width: 500px; padding: 20px; border-radius: 12px; margin-bottom: 20px; }
+        .admin-card h2 { font-size: 1.1rem; margin-bottom: 15px; color: #cbd5e1; border-bottom: 1px solid #475569; padding-bottom: 5px; }
+        input { width: 100%; padding: 12px; margin-bottom: 10px; border-radius: 6px; border: 1px solid #475569; background: #0f172a; color: white; }
+        .grid-socials { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .btn-add { background: #475569; color: white; border: none; padding: 10px; border-radius: 6px; cursor: pointer; width: 100%; margin-bottom: 10px; }
+        .btn-main { background: var(--primary); color: white; border: none; padding: 15px; border-radius: 8px; cursor: pointer; width: 100%; font-weight: bold; font-size: 1rem; }
+        #result-link { margin-top: 20px; padding: 15px; background: #064e3b; border-radius: 8px; display: none; width: 100%; max-width: 500px; text-align: center; }
 
-        /* --- ESTILO DO LINK FINAL (LAYOUT DA FOTO) --- */
-        #bio-view { display: none; width: 100%; max-width: 450px; text-align: center; padding: 50px 20px; }
-        .avatar { width: 110px; height: 110px; border-radius: 50%; border: 4px solid var(--primary); object-fit: cover; margin-bottom: 15px; }
+        /* --- ESTILO DA BIO (LAYOUT DA FOTO) --- */
+        body.view-mode { background: var(--bg-bio); display: flex; justify-content: center; align-items: center; padding: 20px; }
+        #bio-view { 
+            display: none; 
+            width: 100%; 
+            max-width: 420px; 
+            background: var(--card-bio); 
+            border-radius: 24px; 
+            padding: 40px 25px; 
+            text-align: center;
+            box-shadow: 0 0 30px rgba(0,0,0,0.5);
+            border: 1px solid rgba(139, 92, 246, 0.2);
+            position: relative;
+        }
+
+        /* Botão de compartilhar no canto */
+        .share-btn { 
+            position: absolute; top: 20px; right: 20px; 
+            background: var(--primary); width: 35px; height: 35px; 
+            border-radius: 50%; display: flex; align-items: center; 
+            justify-content: center; color: white; font-size: 0.9rem;
+            cursor: pointer;
+        }
+
+        .avatar-wrapper { position: relative; display: inline-block; margin-bottom: 20px; }
+        .avatar { 
+            width: 100px; height: 100px; border-radius: 50%; 
+            border: 3px solid var(--primary); padding: 3px;
+            object-fit: cover;
+            box-shadow: 0 0 15px var(--primary);
+        }
+
+        .user-name { font-size: 1.6rem; font-weight: 800; color: white; text-transform: uppercase; letter-spacing: 1px; }
+        .user-desc { color: #94a3b8; font-size: 0.9rem; margin-top: 5px; margin-bottom: 25px; }
+
+        .social-icons { display: flex; justify-content: center; gap: 15px; margin-bottom: 30px; }
+        .social-icons a { 
+            width: 45px; height: 45px; border-radius: 50%; 
+            display: flex; align-items: center; justify-content: center; 
+            font-size: 1.3rem; color: white; text-decoration: none;
+            transition: 0.3s;
+        }
+        
+        /* Cores dos ícones baseados na foto */
+        .icon-ig { background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888); }
+        .icon-yt { background: #ff0000; }
+        .icon-tk { background: #000000; border: 1px solid #333; }
+        .icon-tg { background: #229ED9; }
+
+        .links-container { display: flex; flex-direction: column; gap: 12px; }
+        .link-card { 
+            background: rgba(255, 255, 255, 0.05); 
+            border: 1px solid rgba(255, 255, 255, 0.1); 
+            padding: 18px; border-radius: 16px; 
+            text-decoration: none; color: white; 
+            transition: 0.3s; text-align: left;
+            display: flex; flex-direction: column;
+        }
+        .link-card:hover { 
+            background: rgba(139, 92, 246, 0.1); 
+            border-color: var(--primary);
+            transform: translateY(-2px);
+        }
+        .link-title { font-weight: 700; font-size: 1rem; }
+        .link-subtitle { font-size: 0.75rem; color: #94a3b8; margin-top: 4px; text-transform: uppercase; }
+
+    </style>
+</head>
+<body>
+
+    <div id="admin-panel">
+        <h1 style="margin-bottom: 20px;">Configurar Bio Link</h1>
+        
+        <div class="admin-card">
+            <h2>👤 Perfil</h2>
+            <input type="text" id="inImg" placeholder="URL da Foto Circular">
+            <input type="text" id="inName" placeholder="Nome (Ex: GRINGO XP)">
+            <input type="text" id="inDesc" placeholder="Descrição (Ex: Promovendo os melhores...)">
+        </div>
+
+        <div class="admin-card">
+            <h2>🌐 Redes Sociais (Links)</h2>
+            <div class="grid-socials">
+                <input type="text" class="social-link" placeholder="URL Instagram">
+                <input type="text" class="social-link" placeholder="URL YouTube">
+                <input type="text" class="social-link" placeholder="URL TikTok">
+                <input type="text" class="social-link" placeholder="URL Telegram">
+            </div>
+        </div>
+
+        <div class="admin-card">
+            <h2>🔗 Botões da Lista</h2>
+            <div id="buttons-area">
+                <div style="margin-bottom: 10px;">
+                    <input type="text" class="btn-t" placeholder="Título (Ex: GET KEY FREE)">
+                    <input type="text" class="btn-s" placeholder="Subtítulo (Ex: OBTENHA CHAVE GRÁTIS)">
+                    <input type="text" class="btn-u" placeholder="URL do Link">
+                </div>
+            </div>
+            <button class="btn-add" onclick="addNewButtonField()">+ Adicionar outro botão</button>
+        </div>
+
+        <button class="btn-main" onclick="generateLink()">CONCLUIR E GERAR LINK</button>
+        
+        <div id="result-link">
+            <p style="font-size: 0.8rem;">Copiado com sucesso! Use este link:</p>
+            <a href="#" id="short-url" style="color: #6ee7b7; font-weight: bold; text-decoration: none;"></a>
+        </div>
+    </div>
+
+    <div id="bio-view">
+        <div class="share-btn"><i class="fas fa-share-alt"></i></div>
+        
+        <div class="avatar-wrapper">
+            <img src="" id="vImg" class="avatar">
+        </div>
+        
+        <h1 class="user-name" id="vName"></h1>
+        <p class="user-desc" id="vDesc"></p>
+
+        <div class="social-icons" id="vSocials"></div>
+
+        <div class="links-container" id="vLinks"></div>
+    </div>
+
+    <script>
+        function addNewButtonField() {
+            const div = document.createElement('div');
+            div.style.marginBottom = "10px";
+            div.style.borderTop = "1px solid #475569";
+            div.style.paddingTop = "10px";
+            div.innerHTML = `
+                <input type="text" class="btn-t" placeholder="Título">
+                <input type="text" class="btn-s" placeholder="Subtítulo">
+                <input type="text" class="btn-u" placeholder="URL do Link">
+            `;
+            document.getElementById('buttons-area').appendChild(div);
+        }
+
+        async function generateLink() {
+            const data = {
+                img: document.getElementById('inImg').value,
+                name: document.getElementById('inName').value,
+                desc: document.getElementById('inDesc').value,
+                socials: Array.from(document.querySelectorAll('.social-link')).map(i => i.value),
+                btns: []
+            };
+
+            const ts = document.querySelectorAll('.btn-t');
+            const ss = document.querySelectorAll('.btn-s');
+            const us = document.querySelectorAll('.btn-u');
+            
+            ts.forEach((t, i) => {
+                if(t.value) data.btns.push({t: t.value, s: ss[i].value, u: us[i].value});
+            });
+
+            const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(data))));
+            const fullUrl = window.location.origin + window.location.pathname + "?v=" + encoded;
+
+            try {
+                const res = await fetch(`https://tinyurl.com/api-create.php?url=${encodeURIComponent(fullUrl)}`);
+                const short = await res.text();
+                document.getElementById('result-link').style.display = 'block';
+                document.getElementById('short-url').innerText = short;
+                document.getElementById('short-url').href = short;
+            } catch (e) {
+                alert("Link gerado: " + fullUrl);
+            }
+        }
+
+        window.onload = () => {
+            const params = new URLSearchParams(window.location.search);
+            const dataRaw = params.get('v');
+
+            if(dataRaw) {
+                // Modo Visualização
+                document.getElementById('admin-panel').style.display = 'none';
+                document.getElementById('bio-view').style.display = 'block';
+                document.body.classList.add('view-mode');
+
+                try {
+                    const data = JSON.parse(decodeURIComponent(escape(atob(dataRaw))));
+                    
+                    document.getElementById('vImg').src = data.img || 'https://via.placeholder.com/100';
+                    document.getElementById('vName').innerText = data.name;
+                    document.getElementById('vDesc').innerText = data.desc;
+
+                    // Social Icons (Até 4 conforme o layout)
+                    const socContainer = document.getElementById('vSocials');
+                    const classes = ['icon-ig', 'icon-yt', 'icon-tk', 'icon-tg'];
+                    const icons = ['fa-instagram', 'fa-youtube', 'fa-tiktok', 'fa-telegram-plane'];
+                    
+                    data.socials.forEach((url, i) => {
+                        if(url) {
+                            socContainer.innerHTML += `<a href="${url}" class="${classes[i]}" target="_blank"><i class="fab ${icons[i]}"></i></a>`;
+                        }
+                    });
+
+                    // Botões da lista
+                    const linkContainer = document.getElementById('vLinks');
+                    data.btns.forEach(b => {
+                        linkContainer.innerHTML += `
+                            <a href="${b.u}" class="link-card" target="_blank">
+                                <span class="link-title">${b.t}</span>
+                                <span class="link-subtitle">${b.s}</span>
+                            </a>
+                        `;
+                    });
+
+                } catch(e) { console.error("Erro ao carregar dados."); }
+            }
+        };
+    </script>
+</body>
+</html>        .avatar { width: 110px; height: 110px; border-radius: 50%; border: 4px solid var(--primary); object-fit: cover; margin-bottom: 15px; }
         .user-name { font-size: 1.4rem; font-weight: 700; margin-bottom: 20px; }
         .social-top { display: flex; justify-content: center; gap: 15px; margin-bottom: 30px; font-size: 1.5rem; }
         .social-top a { color: var(--text); transition: 0.3s; }
