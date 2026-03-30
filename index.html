@@ -3,38 +3,186 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin - Gerador de Bio</title>
+    <title>Bio Link Dinâmico</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://kit.fontawesome.com/64d58efce2.js" crossorigin="anonymous"></script>
+    
     <style>
-        body { font-family: sans-serif; background: #f4f4f9; padding: 20px; }
-        .container { max-width: 500px; margin: auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        input, button { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 5px; }
-        button { background: #007bff; color: white; cursor: pointer; border: none; }
-        .btn-add { background: #28a745; }
-        #linkGerado { word-break: break-all; color: #007bff; font-weight: bold; }
+        :root {
+            --primary: #6366f1;
+            --bg: #0f172a;
+            --card: #1e293b;
+            --text: #f8fafc;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body { background-color: var(--bg); color: var(--text); min-height: 100vh; display: flex; justify-content: center; }
+
+        /* --- ESTILO DO ADMIN --- */
+        #admin-panel { width: 100%; max-width: 600px; padding: 40px 20px; }
+        .card { background: var(--card); padding: 25px; border-radius: 16px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.3); margin-bottom: 20px; }
+        h2 { margin-bottom: 20px; font-size: 1.5rem; color: var(--primary); }
+        label { display: block; margin-bottom: 5px; font-size: 0.9rem; opacity: 0.8; }
+        input { width: 100%; padding: 12px; margin-bottom: 15px; border-radius: 8px; border: 1px solid #334155; background: #0f172a; color: white; outline: none; }
+        input:focus { border-color: var(--primary); }
+        .grid-social { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        button { width: 100%; padding: 15px; border-radius: 8px; border: none; font-weight: 600; cursor: pointer; transition: 0.3s; }
+        .btn-add { background: #334155; color: white; margin-bottom: 10px; }
+        .btn-add:hover { background: #475569; }
+        .btn-generate { background: var(--primary); color: white; font-size: 1.1rem; }
+        .btn-generate:hover { background: #4f46e5; transform: translateY(-2px); }
+
+        /* --- ESTILO DO LINK FINAL (LAYOUT DA FOTO) --- */
+        #bio-view { display: none; width: 100%; max-width: 450px; text-align: center; padding: 50px 20px; }
+        .avatar { width: 110px; height: 110px; border-radius: 50%; border: 4px solid var(--primary); object-fit: cover; margin-bottom: 15px; }
+        .user-name { font-size: 1.4rem; font-weight: 700; margin-bottom: 20px; }
+        .social-top { display: flex; justify-content: center; gap: 15px; margin-bottom: 30px; font-size: 1.5rem; }
+        .social-top a { color: var(--text); transition: 0.3s; }
+        .social-top a:hover { color: var(--primary); }
+        .links-container { display: flex; flex-direction: column; gap: 15px; }
+        .link-item { 
+            background: rgba(255,255,255,0.05); 
+            border: 1px solid rgba(255,255,255,0.1); 
+            padding: 16px; border-radius: 12px; 
+            text-decoration: none; color: white; 
+            font-weight: 600; transition: 0.3s; 
+        }
+        .link-item:hover { background: white; color: black; transform: scale(1.02); }
+
+        #result-link { background: #064e3b; color: #6ee7b7; padding: 15px; border-radius: 8px; margin-top: 20px; word-break: break-all; display: none; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h2>Configurar Bio Link</h2>
-    <input type="text" id="fotoUrl" placeholder="URL da Foto (Ex: link do imgur)">
-    <input type="text" id="nome" placeholder="Seu Nome ou Usuário">
-    
-    <h3>Redes Sociais (Topo)</h3>
-    <input type="text" id="insta" placeholder="Link Instagram">
-    <input type="text" id="tt" placeholder="Link Twitter/X">
-
-    <h3>Botões de Links</h3>
-    <div id="listaBotoes">
-        <div class="item-botao">
-            <input type="text" class="btn-texto" placeholder="Texto do Botão (Ex: Meu WhatsApp)">
-            <input type="text" class="btn-url" placeholder="URL do Link">
+    <div id="admin-panel">
+        <div class="card">
+            <h2>👤 Perfil</h2>
+            <label>URL da Imagem</label>
+            <input type="text" id="imgUrl" placeholder="https://link-da-sua-foto.png">
+            <label>Nome em destaque</label>
+            <input type="text" id="name" placeholder="@seu_nome">
         </div>
+
+        <div class="card">
+            <h2>🌐 Redes Sociais (Topo - Max 6)</h2>
+            <div class="grid-social" id="social-inputs">
+                <input type="text" class="social-url" placeholder="Link Instagram">
+                <input type="text" class="social-url" placeholder="Link WhatsApp">
+                <input type="text" class="social-url" placeholder="Link Twitter/X">
+                <input type="text" class="social-url" placeholder="Link YouTube">
+                <input type="text" class="social-url" placeholder="Link LinkedIn">
+                <input type="text" class="social-url" placeholder="Link Facebook">
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>🔗 Botões Personalizados</h2>
+            <div id="buttons-list">
+                <div class="button-entry">
+                    <input type="text" class="btn-text" placeholder="Texto do botão">
+                    <input type="text" class="btn-href" placeholder="URL do link">
+                </div>
+            </div>
+            <button class="btn-add" onclick="addButton()">+ Adicionar Botão</button>
+        </div>
+
+        <button class="btn-generate" onclick="generateBio()">GERAR MEU BIO LINK</button>
+        
+        <div id="result-link"></div>
     </div>
-    <button class="btn-add" onclick="addBotao()">+ Adicionar outro botão</button>
-    
-    <hr>
-    <button onclick="gerarLink()">CONCLUIR E GERAR LINK</button>
+
+    <div id="bio-view">
+        <div class="social-top" id="view-socials"></div>
+        <img src="" id="view-img" class="avatar">
+        <h1 class="user-name" id="view-name"></h1>
+        <div class="links-container" id="view-links"></div>
+    </div>
+
+    <script>
+        // Função para adicionar novos campos de botões no admin
+        function addButton() {
+            const div = document.createElement('div');
+            div.className = 'button-entry';
+            div.innerHTML = `<input type="text" class="btn-text" placeholder="Texto do botão"><input type="text" class="btn-href" placeholder="URL do link">`;
+            document.getElementById('buttons-list').appendChild(div);
+        }
+
+        // Função que gera o link com os dados encriptados em Base64
+        async function generateBio() {
+            const data = {
+                img: document.getElementById('imgUrl').value,
+                name: document.getElementById('name').value,
+                socials: Array.from(document.querySelectorAll('.social-url')).map(i => i.value).filter(v => v !== ""),
+                btns: []
+            };
+
+            const texts = document.querySelectorAll('.btn-text');
+            const hrefs = document.querySelectorAll('.btn-href');
+            texts.forEach((t, i) => {
+                if(t.value) data.btns.push({t: t.value, h: hrefs[i].value});
+            });
+
+            // Converte dados para uma string segura para URL
+            const jsonString = JSON.stringify(data);
+            const encodedData = btoa(unescape(encodeURIComponent(jsonString)));
+            const finalUrl = window.location.origin + window.location.pathname + "?data=" + encodedData;
+
+            // API TinyURL para encurtar
+            const resultDiv = document.getElementById('result-link');
+            try {
+                const response = await fetch(`https://tinyurl.com/api-create.php?url=${encodeURIComponent(finalUrl)}`);
+                const shortUrl = await response.text();
+                resultDiv.style.display = 'block';
+                resultDiv.innerHTML = `<strong>Sucesso! Seu link:</strong><br><a href="${shortUrl}" style="color:white">${shortUrl}</a>`;
+            } catch (err) {
+                resultDiv.style.display = 'block';
+                resultDiv.innerText = "Link Gerado: " + finalUrl;
+            }
+        }
+
+        // LOGICA DE CARREGAMENTO (Verifica se há dados na URL)
+        window.onload = () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const rawData = urlParams.get('data');
+
+            if (rawData) {
+                document.getElementById('admin-panel').style.display = 'none';
+                document.getElementById('bio-view').style.display = 'block';
+
+                try {
+                    const decodedData = JSON.parse(decodeURIComponent(escape(atob(rawData))));
+                    
+                    // Preenche Foto e Nome
+                    document.getElementById('view-img').src = decodedData.img || 'https://via.placeholder.com/150';
+                    document.getElementById('view-name').innerText = decodedData.name || 'Bio Link';
+
+                    // Preenche Redes Sociais do Topo (Ícones automáticos baseados no link)
+                    const socialContainer = document.getElementById('view-socials');
+                    decodedData.socials.forEach(url => {
+                        let icon = "fa-link";
+                        if(url.includes("instagram")) icon = "fa-instagram";
+                        if(url.includes("wa.me") || url.includes("whatsapp")) icon = "fa-whatsapp";
+                        if(url.includes("twitter") || url.includes("x.com")) icon = "fa-x-twitter";
+                        if(url.includes("youtube")) icon = "fa-youtube";
+                        if(url.includes("facebook")) icon = "fa-facebook";
+                        if(url.includes("linkedin")) icon = "fa-linkedin";
+                        
+                        socialContainer.innerHTML += `<a href="${url}" target="_blank"><i class="fab ${icon}"></i></a>`;
+                    });
+
+                    // Preenche Botões
+                    const linksContainer = document.getElementById('view-links');
+                    decodedData.btns.forEach(btn => {
+                        linksContainer.innerHTML += `<a href="${btn.h}" class="link-item" target="_blank">${btn.t}</a>`;
+                    });
+                } catch (e) {
+                    console.error("Erro ao decodificar dados");
+                }
+            }
+        }
+    </script>
+</body>
+</html>    <button onclick="gerarLink()">CONCLUIR E GERAR LINK</button>
     
     <div id="resultado" style="display:none; margin-top: 20px;">
         <p>Seu link curto:</p>
