@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Gerador de Bio</title>
+    <style>
+        body { font-family: sans-serif; background: #f4f4f9; padding: 20px; }
+        .container { max-width: 500px; margin: auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        input, button { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 5px; }
+        button { background: #007bff; color: white; cursor: pointer; border: none; }
+        .btn-add { background: #28a745; }
+        #linkGerado { word-break: break-all; color: #007bff; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Configurar Bio Link</h2>
+    <input type="text" id="fotoUrl" placeholder="URL da Foto (Ex: link do imgur)">
+    <input type="text" id="nome" placeholder="Seu Nome ou Usuário">
+    
+    <h3>Redes Sociais (Topo)</h3>
+    <input type="text" id="insta" placeholder="Link Instagram">
+    <input type="text" id="tt" placeholder="Link Twitter/X">
+
+    <h3>Botões de Links</h3>
+    <div id="listaBotoes">
+        <div class="item-botao">
+            <input type="text" class="btn-texto" placeholder="Texto do Botão (Ex: Meu WhatsApp)">
+            <input type="text" class="btn-url" placeholder="URL do Link">
+        </div>
+    </div>
+    <button class="btn-add" onclick="addBotao()">+ Adicionar outro botão</button>
+    
+    <hr>
+    <button onclick="gerarLink()">CONCLUIR E GERAR LINK</button>
+    
+    <div id="resultado" style="display:none; margin-top: 20px;">
+        <p>Seu link curto:</p>
+        <p id="linkGerado"></p>
+    </div>
+</div>
+
+<script>
+    function addBotao() {
+        const div = document.createElement('div');
+        div.className = 'item-botao';
+        div.innerHTML = `<input type="text" class="btn-texto" placeholder="Texto do Botão"><input type="text" class="btn-url" placeholder="URL do Link">`;
+        document.getElementById('listaBotoes').appendChild(div);
+    }
+
+    async function gerarLink() {
+        const dados = {
+            foto: document.getElementById('fotoUrl').value,
+            nome: document.getElementById('nome').value,
+            insta: document.getElementById('insta').value,
+            tt: document.getElementById('tt').value,
+            botoes: []
+        };
+
+        const textos = document.querySelectorAll('.btn-texto');
+        const urls = document.querySelectorAll('.btn-url');
+        textos.forEach((t, i) => {
+            if(t.value) dados.botoes.push({texto: t.value, url: urls[i].value});
+        });
+
+        // Salva localmente para o concluir.html ler
+        localStorage.setItem('bioDados', JSON.stringify(dados));
+
+        // URL da página de destino (No GitHub, mude para seu domínio)
+        const urlBase = window.location.href.replace('index.html', 'concluir.html');
+        
+        // Chamada API TinyURL (Simples)
+        try {
+            const response = await fetch(`https://tinyurl.com/api-create.php?url=${encodeURIComponent(urlBase)}`);
+            const shortUrl = await response.text();
+            document.getElementById('linkGerado').innerText = shortUrl;
+            document.getElementById('resultado').style.display = 'block';
+        } catch (e) {
+            alert("Erro ao gerar link curto, use: " + urlBase);
+        }
+    }
+</script>
+
+</body>
+</html>
