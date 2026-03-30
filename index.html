@@ -3,38 +3,51 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bio Link Pro</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-    <script src="https://kit.fontawesome.com/64d58efce2.js" crossorigin="anonymous"></script>
-    
+    <title>Admin - Controle do Chat</title>
     <style>
-        :root {
-            --primary: #8b5cf6;
-            --bg-admin: #1e293b;
-            --bg-bio: #1a1033; /* Roxo escuro do fundo da foto */
-            --card-bio: #1e1b2e;
-            --text: #ffffff;
-        }
+        body { font-family: sans-serif; text-align: center; padding: 50px; background: #f4f4f4; }
+        button { padding: 15px 30px; font-size: 18px; cursor: pointer; border: none; border-radius: 5px; margin: 10px; }
+        .btn-open { background: #28a745; color: white; }
+        .btn-close { background: #dc3545; color: white; }
+        #status { font-weight: bold; font-size: 20px; }
+    </style>
+</head>
+<body>
+    <h2>Controle do Chat</h2>
+    <p>Status atual: <span id="status">Carregando...</span></p>
+    <button class="btn-open" id="openBtn">ABRIR CHAT</button>
+    <button class="btn-close" id="closeBtn">FECHAR CHAT</button>
 
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-        /* --- ESTILO DO PAINEL ADMIN (Fica oculto quando visualiza a bio) --- */
-        #admin-panel { 
-            background-color: var(--bg-admin); 
-            min-height: 100vh; 
-            padding: 40px 20px; 
-            color: white;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        .admin-card { background: #334155; width: 100%; max-width: 500px; padding: 20px; border-radius: 12px; margin-bottom: 20px; }
-        .admin-card h2 { font-size: 1.1rem; margin-bottom: 15px; color: #cbd5e1; border-bottom: 1px solid #475569; padding-bottom: 5px; }
-        input { width: 100%; padding: 12px; margin-bottom: 10px; border-radius: 6px; border: 1px solid #475569; background: #0f172a; color: white; }
-        .grid-socials { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .btn-add { background: #475569; color: white; border: none; padding: 10px; border-radius: 6px; cursor: pointer; width: 100%; margin-bottom: 10px; }
-        .btn-main { background: var(--primary); color: white; border: none; padding: 15px; border-radius: 8px; cursor: pointer; width: 100%; font-weight: bold; font-size: 1rem; }
-        #result-link { margin-top: 20px; padding: 15px; background: #064e3b; border-radius: 8px; display: none; width: 100%; max-width: 500px; text-align: center; }
+        const firebaseConfig = {
+            apiKey: "AIzaSyCbLVtiN0JlJ5qjMWyYtwUHEs8NP6DTaPM",
+            authDomain: "chat-4b3e3.firebaseapp.com",
+            databaseURL: "https://chat-4b3e3-default-rtdb.firebaseio.com",
+            projectId: "chat-4b3e3",
+            storageBucket: "chat-4b3e3.firebasestorage.app",
+            messagingSenderId: "445315176420",
+            appId: "1:445315176420:web:cc468a5c89b8706a7059f1"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        // Atualiza o status no Firebase
+        document.getElementById('openBtn').onclick = () => set(ref(db, 'chatStatus'), true);
+        document.getElementById('closeBtn').onclick = () => set(ref(db, 'chatStatus'), false);
+
+        // Mostra o status em tempo real
+        onValue(ref(db, 'chatStatus'), (snapshot) => {
+            const status = snapshot.val();
+            document.getElementById('status').innerText = status ? "ABERTO" : "FECHADO";
+            document.getElementById('status').style.color = status ? "green" : "red";
+        });
+    </script>
+</body>
+</html>        #result-link { margin-top: 20px; padding: 15px; background: #064e3b; border-radius: 8px; display: none; width: 100%; max-width: 500px; text-align: center; }
 
         /* --- ESTILO DA BIO (LAYOUT DA FOTO) --- */
         body.view-mode { background: var(--bg-bio); display: flex; justify-content: center; align-items: center; padding: 20px; }
