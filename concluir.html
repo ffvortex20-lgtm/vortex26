@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meu Bio Link</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #0f0f0f; color: white; display: flex; justify-content: center; min-height: 100vh; padding-top: 50px; }
+        .profile-container { width: 90%; max-width: 400px; text-align: center; }
+        
+        .social-icons { margin-bottom: 20px; font-size: 24px; }
+        .social-icons a { color: white; text-decoration: none; margin: 0 10px; }
+        
+        .avatar { width: 100px; height: 100px; border-radius: 50%; border: 3px solid #007bff; object-fit: cover; margin-bottom: 15px; }
+        h1 { font-size: 1.2rem; margin-bottom: 30px; }
+        
+        .links-area { display: flex; flex-direction: column; gap: 15px; }
+        .btn-link { 
+            background: rgba(255, 255, 255, 0.1); 
+            border: 1px solid rgba(255,255,255,0.2);
+            color: white; 
+            padding: 15px; 
+            border-radius: 30px; 
+            text-decoration: none; 
+            transition: 0.3s;
+            font-weight: 500;
+        }
+        .btn-link:hover { background: white; color: black; }
+    </style>
+</head>
+<body>
+
+<div class="profile-container">
+    <div class="social-icons" id="socialTopo">
+        </div>
+    
+    <img id="userFoto" src="" alt="Foto" class="avatar">
+    <h1 id="userName">Usuário</h1>
+
+    <div class="links-area" id="linksContainer">
+        </div>
+</div>
+
+<script>
+    // Recupera os dados salvos
+    const dados = JSON.parse(localStorage.getItem('bioDados'));
+
+    if (dados) {
+        document.getElementById('userFoto').src = dados.foto || 'https://via.placeholder.com/100';
+        document.getElementById('userName').innerText = dados.nome || 'Nome Indisponível';
+
+        // Redes Sociais
+        let socialHtml = '';
+        if(dados.insta) socialHtml += `<a href="${dados.insta}">📸</a>`;
+        if(dados.tt) socialHtml += `<a href="${dados.tt}">🐦</a>`;
+        document.getElementById('socialTopo').innerHTML = socialHtml;
+
+        // Botões Dinâmicos
+        const container = document.getElementById('linksContainer');
+        dados.botoes.forEach(btn => {
+            const a = document.createElement('a');
+            a.href = btn.url;
+            a.className = 'btn-link';
+            a.innerText = btn.texto;
+            a.target = "_blank";
+            container.appendChild(a);
+        });
+    } else {
+        document.body.innerHTML = "<h1>Nenhuma configuração encontrada. Vá ao Admin primeiro.</h1>";
+    }
+</script>
+
+</body>
+</html>
