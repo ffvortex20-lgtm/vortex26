@@ -3,68 +3,63 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vortex Group</title>
+    <title>Vortex - Chat</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         :root { --primary: #8a2be2; --bg: #0b0b0e; --panel: #16161d; }
         body { background: var(--bg); color: #fff; font-family: 'Segoe UI', sans-serif; margin: 0; display: flex; justify-content: center; height: 100vh; overflow: hidden; }
-        #app { width: 100%; max-width: 500px; display: flex; flex-direction: column; background: var(--panel); position: relative; }
+        #app { width: 100%; max-width: 500px; background: var(--panel); display: flex; flex-direction: column; position: relative; }
         
-        /* Header Estilo WhatsApp */
-        .header { background: #1f1f29; padding: 10px 15px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid #333; }
-        .header img { width: 45px; height: 45px; border-radius: 50%; object-fit: cover; border: 2px solid var(--primary); }
-        .header-info b { display: block; font-size: 16px; }
-        .header-info span { font-size: 11px; color: #28a745; }
+        /* Lista de Grupos */
+        .wp-item { display: flex; align-items: center; padding: 15px; border-bottom: 1px solid #222; cursor: pointer; }
+        .wp-item:hover { background: #1f1f29; }
+        .wp-item img { width: 55px; height: 55px; border-radius: 50%; margin-right: 15px; object-fit: cover; border: 2px solid var(--primary); }
 
-        #chat-window { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 12px; background: #0b0b0e; }
-        
-        /* Balões */
-        .msg { padding: 10px 14px; border-radius: 18px; max-width: 80%; font-size: 14px; word-wrap: break-word; }
+        /* Chat */
+        #chat-window { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 10px; background: #050505; }
+        .msg { padding: 10px; border-radius: 15px; max-width: 85%; font-size: 14px; position: relative; }
         .received { background: #20202b; align-self: flex-start; border-bottom-left-radius: 2px; }
         .owner { background: #2d1b4d; align-self: flex-end; border-bottom-right-radius: 2px; border: 1px solid var(--primary); }
         
-        .input-area { background: #1f1f29; padding: 12px; display: flex; align-items: center; gap: 10px; }
-        .input-box { flex: 1; background: #2c2c3a; border-radius: 25px; display: flex; align-items: center; padding: 0 15px; }
-        input { background: none; border: none; color: #fff; padding: 12px; flex: 1; outline: none; }
-        .btn-send { width: 45px; height: 45px; border-radius: 50%; border: none; background: var(--primary); color: white; cursor: pointer; }
+        .header { background: #1f1f29; padding: 10px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid #333; }
+        .header img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
         
-        #overlay { position: absolute; inset: 0; background: #0b0b0e; z-index: 200; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+        .input-area { background: #1f1f29; padding: 10px; display: flex; align-items: center; gap: 10px; }
+        input { flex: 1; background: #2c2c3a; border: none; color: white; padding: 12px; border-radius: 25px; outline: none; }
+        .btn-round { width: 45px; height: 45px; border-radius: 50%; background: var(--primary); border: none; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        
+        audio { filter: invert(1); max-width: 100%; height: 35px; margin-top: 5px; }
         .hidden { display: none !important; }
-        audio { filter: invert(1); max-width: 100%; }
     </style>
 </head>
 <body>
 <div id="app">
-    <div id="overlay" class="hidden">
-        <h2 id="group-title-login">Entrar no Grupo</h2>
-        <input type="text" id="userName" placeholder="Escolha um nome único..." style="width: 80%; background: #222; margin-bottom: 10px; border-radius: 10px; padding: 15px; color: #fff; border: none;">
-        <button onclick="tryJoin()" style="background: var(--primary); padding: 15px 50px; border-radius: 30px; border: none; color: white; font-weight: bold; cursor: pointer;">ENTRAR AGORA</button>
+    <div id="list-screen">
+        <div style="padding: 20px; background: #1f1f29; font-size: 22px; font-weight: bold; border-bottom: 1px solid #333;">Mensagens</div>
+        <div id="groups-container"></div>
     </div>
 
-    <div class="header">
-        <img id="group-img" src="">
-        <div class="header-info">
-            <b id="group-name">Carregando...</b>
-            <span id="chat-status-label">online</span>
+    <div id="chat-screen" class="hidden" style="height: 100%; display: flex; flex-direction: column;">
+        <div class="header">
+            <button onclick="location.href='chat.html'" style="background:none; border:none; color:white; font-size:18px;"><i class="fas fa-arrow-left"></i></button>
+            <img id="h-pic" src="">
+            <b id="h-name">Grupo</b>
         </div>
-    </div>
-
-    <div id="chat-window"></div>
-
-    <div class="input-area" id="controls">
-        <button style="background:none; color:#888; border:none; font-size: 20px;" onclick="addMedia()"><i class="fas fa-plus"></i></button>
-        <div class="input-box">
-            <input type="text" id="msgIn" placeholder="Mensagem">
-            <button id="recBtn" style="background:none; border:none; color:#888; cursor: pointer;"><i class="fas fa-microphone"></i></button>
+        <div id="chat-window"></div>
+        <div class="input-area" id="ctrls">
+            <div style="flex: 1; background: #2c2c3a; border-radius: 25px; display: flex; align-items: center; padding: 0 15px;">
+                <input type="text" id="msgI" placeholder="Mensagem">
+                <i class="fas fa-microphone" id="recBtn" style="color: #888; cursor: pointer; font-size: 18px;"></i>
+            </div>
+            <button class="btn-round" onclick="enviarT()"><i class="fas fa-paper-plane"></i></button>
         </div>
-        <button class="btn-send" onclick="doSend()"><i class="fas fa-paper-plane"></i></button>
     </div>
 </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getDatabase, ref, push, onValue, get, set, child, query, limitToLast } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    import { getDatabase, ref, onValue, push, set, get, child } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyCbLVtiN0JlJ5qjMWyYtwUHEs8NP6DTaPM",
@@ -79,78 +74,85 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    // Carregar Info do Grupo
-    onValue(ref(db, 'groupConfig'), s => {
-        if(s.exists()) {
-            document.getElementById('group-name').innerText = s.val().name;
-            document.getElementById('group-img').src = s.val().pic;
-            document.getElementById('group-title-login').innerText = "Entrar em " + s.val().name;
-        }
-    });
+    const params = new URLSearchParams(window.location.search);
+    const gid = params.get('g');
+    const token = params.get('t');
+    const myName = localStorage.getItem('vortex_u') || "Membro " + Math.floor(Math.random()*999);
 
-    // Login Único
-    window.tryJoin = async () => {
-        const name = document.getElementById('userName').value.trim();
-        if(!name) return;
-        const s = await get(child(ref(db), `users/${name.toLowerCase()}`));
-        if(s.exists()) return Swal.fire('Nome já existe!');
-        await set(ref(db, `users/${name.toLowerCase()}`), true);
-        localStorage.setItem('vortex_user', name);
-        location.reload();
+    if (!gid) {
+        onValue(ref(db, 'groups'), snap => {
+            const container = document.getElementById('groups-container');
+            container.innerHTML = "";
+            snap.forEach(c => {
+                const g = c.val();
+                container.innerHTML += `
+                    <div class="wp-item" onclick="location.href='chat.html?g=${g.id}&t=${g.inviteToken}'">
+                        <img src="${g.pic}">
+                        <div style="flex:1">
+                            <b>${g.name}</b><br>
+                            <span style="font-size:12px; color:#888">${g.isOpen ? 'Online' : 'Fechado'}</span>
+                        </div>
+                    </div>`;
+            });
+        });
+    } else {
+        document.getElementById('list-screen').classList.add('hidden');
+        document.getElementById('chat-screen').classList.remove('hidden');
+
+        onValue(ref(db, `groups/${gid}`), snap => {
+            const g = snap.val();
+            if(!g || g.inviteToken !== token) {
+                Swal.fire('Acesso Negado!', 'Link inválido ou expirado.', 'error').then(() => location.href='chat.html');
+                return;
+            }
+            document.getElementById('h-name').innerText = g.name;
+            document.getElementById('h-pic').src = g.pic;
+            document.getElementById('ctrls').style.display = g.isOpen ? 'flex' : 'none';
+        });
+
+        onValue(ref(db, `messages/${gid}`), snap => {
+            const win = document.getElementById('chat-window');
+            win.innerHTML = "";
+            snap.forEach(c => {
+                const m = c.val();
+                const div = document.createElement('div');
+                div.className = `msg ${m.user === myName ? 'owner' : 'received'}`;
+                let content = m.text;
+                if(m.type === 'audio') content = `<audio src="${m.text}" controls></audio>`;
+                div.innerHTML = `<b style="font-size:10px; color:var(--primary)">${m.user}</b><br>${content}`;
+                win.appendChild(div);
+            });
+            win.scrollTop = win.scrollHeight;
+        });
+    }
+
+    function send(t, type='text') {
+        push(ref(db, `messages/${gid}`), { user: myName, text: t, type: type, time: Date.now() });
+    }
+
+    window.enviarT = () => {
+        const i = document.getElementById('msgI');
+        if(i.value) { send(i.value); i.value = ""; }
     };
 
-    const myName = localStorage.getItem('vortex_user');
-    let isAdmin = false;
-    if(!myName) document.getElementById('overlay').classList.remove('hidden');
-    else onValue(ref(db, 'admins/'+myName.toLowerCase()), s => isAdmin = !!s.val());
-
-    // Status do Chat
-    onValue(ref(db, 'chatStatus'), s => {
-        document.getElementById('controls').style.display = s.val() ? 'flex' : 'none';
-        document.getElementById('chat-status-label').innerText = s.val() ? 'online' : 'grupo fechado';
-        document.getElementById('chat-status-label').style.color = s.val() ? '#28a745' : '#dc3545';
-    });
-
-    // Enviar
-    function send(t, type='text') {
-        push(ref(db, 'messages'), { user: myName, text: t, type, isOwner: isAdmin, time: new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) });
-    }
-    window.doSend = () => { const i = document.getElementById('msgIn'); if(i.value) { send(i.value); i.value=''; }};
-    window.addMedia = async () => { const {value:u} = await Swal.fire({title:'Link da Imagem', input:'url'}); if(u) send(u, 'media'); };
-
-    // Áudio
-    let rec;
-    document.getElementById('recBtn').onpointerdown = async (e) => {
-        const stream = await navigator.mediaDevices.getUserMedia({audio:true});
-        rec = new MediaRecorder(stream);
+    // Lógica do Áudio Base64
+    let recorder;
+    const rb = document.getElementById('recBtn');
+    rb.onpointerdown = async () => {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        recorder = new MediaRecorder(stream);
         let chunks = [];
-        rec.ondataavailable = ev => chunks.push(ev.data);
-        rec.onstop = () => {
+        recorder.ondataavailable = e => chunks.push(e.data);
+        recorder.onstop = () => {
             const reader = new FileReader();
             reader.readAsDataURL(new Blob(chunks));
             reader.onloadend = () => send(reader.result, 'audio');
             stream.getTracks().forEach(t => t.stop());
         };
-        rec.start();
-        document.getElementById('recBtn').style.color = 'red';
+        recorder.start();
+        rb.style.color = "red";
     };
-    document.getElementById('recBtn').onpointerup = () => { if(rec) { rec.stop(); document.getElementById('recBtn').style.color = '#888'; }};
-
-    // Renderizar
-    onValue(query(ref(db, 'messages'), limitToLast(40)), snap => {
-        const win = document.getElementById('chat-window'); win.innerHTML = "";
-        snap.forEach(c => {
-            const m = c.val();
-            const div = document.createElement('div');
-            div.className = `msg ${m.isOwner ? 'owner' : 'received'}`;
-            let html = m.text;
-            if(m.type === 'audio') html = `<audio src="${m.text}" controls></audio>`;
-            else if(m.text.match(/\.(jpg|png|gif|webp)/i)) html = `<img src="${m.text}" style="width:100%; border-radius:10px;">`;
-            div.innerHTML = `<small style="display:block; font-weight:bold; margin-bottom:3px; color:${m.isOwner?'#a29bfe':'#888'}">${m.user} ${m.isOwner?'👑':''}</small>${html}`;
-            win.appendChild(div);
-        });
-        win.scrollTop = win.scrollHeight;
-    });
+    rb.onpointerup = () => { if(recorder) { recorder.stop(); rb.style.color = "#888"; } };
 </script>
 </body>
 </html>
