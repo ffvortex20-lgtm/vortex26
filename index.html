@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vortex Admin - Elite</title>
+    <title>Vortex Admin - Multi Grupos</title>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
@@ -13,7 +13,6 @@
         .section { background: #000; padding: 15px; border-radius: 15px; margin-bottom: 20px; border: 1px solid #222; }
         input { background: #111; border: 1px solid #333; color: white; padding: 12px; border-radius: 10px; width: 100%; margin-bottom: 10px; outline: none; box-sizing: border-box; }
         button { cursor: pointer; border: none; padding: 10px; border-radius: 8px; font-weight: bold; color: white; background: var(--primary); transition: 0.3s; }
-        button:hover { opacity: 0.8; }
         .group-item { background: #1a1a1a; padding: 15px; border-radius: 12px; margin-bottom: 15px; border-left: 4px solid var(--primary); }
         .group-controls { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
         .monitor-box { background: #050505; height: 100px; overflow-y: auto; font-size: 11px; padding: 10px; margin-top: 10px; border-radius: 8px; color: #888; border: 1px solid #222; }
@@ -21,114 +20,77 @@
 </head>
 <body>
 <div class="container">
-    <h1><i class="fas fa-crown"></i> Vortex Master Control</h1>
-
+    <h1>👑 Vortex Master</h1>
     <div class="section">
-        <h3><i class="fas fa-plus-circle"></i> Criar Novo Grupo</h3>
+        <h3>➕ Novo Grupo</h3>
         <input type="text" id="newGroupName" placeholder="Nome do Grupo">
-        <input type="text" id="newGroupPic" placeholder="URL da Foto do Grupo">
+        <input type="text" id="newGroupPic" placeholder="URL da Foto">
         <button onclick="createGroup()" style="width: 100%;">CRIAR GRUPO</button>
     </div>
-
-    <div id="groupsList">
-        <h3><i class="fas fa-layer-group"></i> Meus Grupos</h3>
-        <p style="color: #666;">Carregando...</p>
-    </div>
+    <div id="groupsList"><h3>📂 Meus Grupos</h3></div>
 </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getDatabase, ref, set, push, onValue, remove, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-    const firebaseConfig = {
-        apiKey: "AIzaSyCbLVtiN0JlJ5qjMWyYtwUHEs8NP6DTaPM",
-        authDomain: "chat-4b3e3.firebaseapp.com",
-        databaseURL: "https://chat-4b3e3-default-rtdb.firebaseio.com",
-        projectId: "chat-4b3e3",
-        storageBucket: "chat-4b3e3.firebasestorage.app",
-        messagingSenderId: "445315176420",
-        appId: "1:445315176420:web:cc468a5c89b8706a7059f1"
-    };
-
+    const firebaseConfig = { /* SUAS CONFIGS AQUI */ };
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    const generateToken = () => Math.random().toString(36).substring(2, 12);
+    const genToken = () => Math.random().toString(36).substring(2, 12);
 
     window.createGroup = () => {
         const name = document.getElementById('newGroupName').value;
         const pic = document.getElementById('newGroupPic').value;
-        if(!name || !pic) return Swal.fire('Preencha nome e foto!');
-
-        const newGroupRef = push(ref(db, 'groups'));
-        set(newGroupRef, {
-            id: newGroupRef.key,
-            name: name,
-            pic: pic,
-            isOpen: true,
-            inviteToken: generateToken()
-        });
-        document.getElementById('newGroupName').value = "";
-        document.getElementById('newGroupPic').value = "";
+        if(name && pic) {
+            const newRef = push(ref(db, 'groups'));
+            set(newRef, { id: newRef.key, name, pic, isOpen: true, inviteToken: genToken() });
+            document.getElementById('newGroupName').value = ""; document.getElementById('newGroupPic').value = "";
+        }
     };
 
-    onValue(ref(db, 'groups'), (snapshot) => {
-        const list = document.getElementById('groupsList');
-        list.innerHTML = "<h3><i class='fas fa-layer-group'></i> Meus Grupos</h3>";
-        snapshot.forEach((child) => {
-            const g = child.val();
-            const gDiv = document.createElement('div');
-            gDiv.className = 'group-item';
-            gDiv.innerHTML = `
-                <div style="display:flex; align-items:center; gap:12px;">
-                    <img src="${g.pic}" style="width:45px; height:45px; border-radius:50%; object-fit:cover;">
-                    <div>
-                        <b>${g.name}</b><br>
-                        <small style="color:${g.isOpen ? '#28a745' : '#dc3545'}">${g.isOpen ? 'ABERTO' : 'FECHADO'}</small>
-                    </div>
+    onValue(ref(db, 'groups'), snap => {
+        const list = document.getElementById('groupsList'); list.innerHTML = "<h3>📂 Meus Grupos</h3>";
+        snap.forEach(c => {
+            const g = c.val();
+            const div = document.createElement('div');
+            div.className = 'group-item';
+            div.innerHTML = `
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <img src="${g.pic}" style="width:40px; height:40px; border-radius:50%; object-fit:cover;">
+                    <b>${g.name}</b>
                 </div>
                 <div class="group-controls">
-                    <button onclick="toggleGroup('${g.id}', ${!g.isOpen})">${g.isOpen ? 'Fechar' : 'Abrir'}</button>
-                    <button onclick="copyLink('${g.id}', '${g.inviteToken}')" style="background:#333">Copiar Link</button>
-                    <button onclick="resetInvite('${g.id}')" style="background:#f39c12">Redefinir</button>
-                    <button onclick="deleteGroup('${g.id}')" style="background:#dc3545">Excluir</button>
+                    <button onclick="toggleG('${g.id}', ${!g.isOpen})">${g.isOpen ? 'Fechar' : 'Abrir'}</button>
+                    <button onclick="copyL('${g.id}', '${g.inviteToken}')" style="background:#333">Link Chat</button>
+                    <button onclick="resetL('${g.id}')" style="background:#f39c12">Redefinir</button>
+                    <button onclick="delG('${g.id}')" style="background:red">Excluir</button>
                 </div>
-                <div class="monitor-box" id="mon-${g.id}">Monitorando chat...</div>
+                <div class="monitor-box" id="mon-${g.id}">Carregando...</div>
             `;
-            list.appendChild(gDiv);
-            setupMonitor(g.id);
+            list.appendChild(div);
+            setupMon(g.id);
         });
     });
 
-    window.toggleGroup = (id, status) => update(ref(db, `groups/${id}`), { isOpen: status });
-    
-    window.resetInvite = (id) => update(ref(db, `groups/${id}`), { inviteToken: generateToken() }).then(() => Swal.fire('Link Atualizado!'));
+    window.toggleG = (id, s) => update(ref(db, `groups/${id}`), { isOpen: s });
+    window.resetL = (id) => update(ref(db, `groups/${id}`), { inviteToken: genToken() }).then(() => Swal.fire('Link Redefinido!'));
+    window.delG = (id) => { remove(ref(db, `groups/${id}`)); remove(ref(db, `messages/${id}`)); };
 
-    window.copyLink = (id, token) => {
-        const url = window.location.href.replace('index.html', 'chat.html') + `?g=${id}&t=${token}`;
+    window.copyL = (id, t) => {
+        let base = window.location.href.substring(0, window.location.href.lastIndexOf('/') + 1);
+        const url = `${base}chat.html?g=${id}&t=${t}`;
         navigator.clipboard.writeText(url);
-        Swal.fire('Copiado!', 'Link de convite pronto.', 'success');
+        Swal.fire('Copiado!', url, 'success');
     };
 
-    window.deleteGroup = (id) => {
-        Swal.fire({ title: 'Apagar Grupo e Mensagens?', showCancelButton: true, confirmButtonColor: '#dc3545' }).then(r => {
-            if(r.isConfirmed) {
-                remove(ref(db, `groups/${id}`));
-                remove(ref(db, `messages/${id}`));
-            }
-        });
-    };
-
-    function setupMonitor(id) {
+    function setupMon(id) {
         onValue(ref(db, `messages/${id}`), snap => {
-            const mon = document.getElementById('mon-'+id);
-            if(!mon) return;
-            mon.innerHTML = "";
-            snap.forEach(m => {
-                const d = m.val();
-                mon.innerHTML += `<div><b>${d.user}:</b> ${d.type === 'text' ? d.text : '[Áudio/Mídia]'}</div>`;
-            });
-            mon.scrollTop = mon.scrollHeight;
+            const m = document.getElementById('mon-'+id); if(!m) return;
+            m.innerHTML = "";
+            snap.forEach(d => { m.innerHTML += `<div><b>${d.val().user}:</b> ${d.val().text.substring(0,20)}</div>`; });
+            m.scrollTop = m.scrollHeight;
         });
     }
 </script>
