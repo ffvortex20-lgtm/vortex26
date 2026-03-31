@@ -3,42 +3,45 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin - Master Control</title>
+    <title>Master Admin - Vortex</title>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
-        :root { --primary: #8a2be2; --bg: #0a0a0a; --card: #161616; --text: #eee; }
-        body { font-family: 'Poppins', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; text-align: center; }
-        .container { max-width: 800px; margin: auto; background: var(--card); padding: 25px; border-radius: 20px; border: 1px solid #333; }
-        .status-badge { padding: 10px 20px; border-radius: 50px; font-weight: bold; display: inline-block; margin-bottom: 20px; }
-        .open { background: #28a74522; color: #28a745; border: 1px solid #28a745; }
-        .closed { background: #dc354522; color: #dc3545; border: 1px solid #dc3545; }
-        button { cursor: pointer; border: none; padding: 12px 25px; border-radius: 10px; font-weight: 600; transition: 0.3s; margin: 5px; }
-        .btn-main { background: var(--primary); color: white; }
-        .btn-danger { background: #dc3545; color: white; }
-        .invite-box { background: #000; padding: 15px; border-radius: 10px; margin: 20px 0; border: 1px dashed var(--primary); word-break: break-all; }
-        .msg-list { text-align: left; background: #000; border-radius: 10px; padding: 10px; height: 300px; overflow-y: auto; margin-top: 10px; }
-        .msg-item { display: flex; justify-content: space-between; padding: 8px; border-bottom: 1px solid #222; align-items: center; font-size: 14px; }
-        .del-btn { background: #ff4757; font-size: 11px; padding: 4px 8px; }
+        :root { --primary: #8a2be2; --bg: #0a0a0b; --card: #16161e; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: white; text-align: center; padding: 20px; }
+        .box { max-width: 600px; margin: auto; background: var(--card); padding: 25px; border-radius: 15px; border: 1px solid #333; }
+        button { cursor: pointer; border: none; padding: 12px 20px; border-radius: 8px; font-weight: bold; margin: 5px; transition: 0.3s; }
+        .btn-on { background: #28a745; color: white; }
+        .btn-off { background: #dc3545; color: white; }
+        .btn-promo { background: var(--primary); color: white; }
+        input { padding: 12px; border-radius: 8px; border: 1px solid #444; background: #000; color: white; width: 70%; margin-bottom: 10px; }
+        .list { text-align: left; background: #000; height: 200px; overflow-y: auto; padding: 10px; border-radius: 8px; margin-top: 15px; font-size: 14px; }
+        .msg-item { border-bottom: 1px solid #222; padding: 5px; display: flex; justify-content: space-between; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h1>👑 Painel Administrativo</h1>
-    <div id="statusBadge" class="status-badge closed">Carregando status...</div>
+<div class="box">
+    <h1>👑 Controle Total</h1>
     
-    <div>
-        <button class="btn-main" id="btnOpen">ABRIR CHAT</button>
-        <button class="btn-danger" id="btnClose">FECHAR CHAT</button>
+    <div style="margin-bottom: 20px;">
+        <button class="btn-on" id="openChat">ABRIR CHAT</button>
+        <button class="btn-off" id="closeChat">FECHAR CHAT</button>
     </div>
 
-    <div class="invite-box">
-        <span id="inviteLink">Carregando link...</span>
-        <button class="btn-main" style="padding: 5px 10px; font-size: 12px; margin-left: 10px;" id="copyBtn">Copiar Link do Chat</button>
+    <hr style="border: 0.5px solid #333;">
+
+    <h3>Dar Admin a Usuário</h3>
+    <input type="text" id="targetUser" placeholder="Nome exato do usuário...">
+    <button class="btn-promo" id="promoBtn">Promover</button>
+
+    <div style="background: #000; padding: 10px; margin-top: 20px; border-radius: 8px; word-break: break-all;">
+        <small>Link do Chat:</small><br>
+        <b id="chatLink">carregando...</b><br>
+        <button onclick="copyChatLink()" style="font-size: 10px; padding: 5px;">Copiar Link</button>
     </div>
 
-    <h3>Monitoramento em Tempo Real</h3>
-    <div class="msg-list" id="monitor"></div>
+    <h3>Monitor de Mensagens</h3>
+    <div class="list" id="monitor"></div>
 </div>
 
 <script type="module">
@@ -58,60 +61,42 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    // Gerar Link do Chat Corretamente
-    const currentUrl = window.location.href;
-    const chatUrl = currentUrl.substring(0, currentUrl.lastIndexOf("/")) + "/chat.html";
-    const linkDisplay = document.getElementById('inviteLink');
-    linkDisplay.innerText = chatUrl;
+    // Abrir/Fechar
+    document.getElementById('openChat').onclick = () => set(ref(db, 'chatStatus'), true);
+    document.getElementById('closeChat').onclick = () => set(ref(db, 'chatStatus'), false);
 
-    // Função Copiar
-    document.getElementById('copyBtn').onclick = () => {
-        navigator.clipboard.writeText(chatUrl);
-        Swal.fire({
-            title: 'Copiado!',
-            text: 'Link do CHAT copiado para a área de transferência.',
-            icon: 'success',
-            confirmButtonColor: '#8a2be2'
-        });
+    // Promover
+    document.getElementById('promoBtn').onclick = () => {
+        const user = document.getElementById('targetUser').value.trim();
+        if(user) {
+            set(ref(db, 'admins/' + user.toLowerCase()), true);
+            Swal.fire('Promovido!', user + ' agora é Admin.', 'success');
+            document.getElementById('targetUser').value = "";
+        }
     };
 
-    // Controle de Status
-    document.getElementById('btnOpen').onclick = () => set(ref(db, 'chatStatus'), true);
-    document.getElementById('btnClose').onclick = () => set(ref(db, 'chatStatus'), false);
+    // Link do Chat
+    const linkChat = window.location.href.replace('index.html', 'chat.html');
+    document.getElementById('chatLink').innerText = linkChat;
+    window.copyChatLink = () => {
+        navigator.clipboard.writeText(linkChat);
+        Swal.fire('Copiado!', '', 'success');
+    };
 
-    onValue(ref(db, 'chatStatus'), (snap) => {
-        const badge = document.getElementById('statusBadge');
-        badge.innerText = snap.val() ? "CHAT ONLINE" : "CHAT OFFLINE";
-        badge.className = `status-badge ${snap.val() ? 'open' : 'closed'}`;
-    });
-
-    // Monitoramento e Exclusão
+    // Monitor
     onValue(ref(db, 'messages'), (snap) => {
-        const monitor = document.getElementById('monitor');
-        monitor.innerHTML = "";
-        if (!snap.exists()) {
-            monitor.innerHTML = "<p style='text-align:center; color:#666;'>Nenhuma mensagem enviada.</p>";
-            return;
-        }
-        snap.forEach(child => {
-            const m = child.val();
-            const div = document.createElement('div');
-            div.className = 'msg-item';
-            
-            // Lógica para mostrar se é texto ou mídia no monitor
-            let preview = m.text;
-            if (m.type === 'audio') preview = "🎤 Áudio enviado";
-            if (m.text.match(/\.(jpeg|jpg|gif|png|webp|mp4)/i)) preview = "📷 Mídia enviada";
-            
-            div.innerHTML = `<span><b>${m.user}:</b> ${preview.substring(0, 30)}...</span>
-                             <button class="del-btn" id="del-${child.key}">Apagar</button>`;
-            monitor.appendChild(div);
-
-            document.getElementById(`del-${child.key}`).onclick = () => {
-                remove(ref(db, `messages/${child.key}`));
-            };
+        const div = document.getElementById('monitor');
+        div.innerHTML = "";
+        snap.forEach(c => {
+            const m = c.val();
+            div.innerHTML += `<div class="msg-item">
+                <span><b>${m.user}:</b> ${m.text.substring(0,20)}</span>
+                <button onclick="removeMsg('${c.key}')" style="background:red; color:white; font-size:9px;">X</button>
+            </div>`;
         });
     });
+
+    window.removeMsg = (id) => remove(ref(db, 'messages/' + id));
 </script>
 </body>
 </html>
