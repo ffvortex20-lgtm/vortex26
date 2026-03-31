@@ -54,7 +54,7 @@
             const g = child.val();
             div.innerHTML += `
                 <div class="group-card">
-                    <b>${g.name}</b> (${g.status})
+                    <b>${g.name}</b>
                     <div class="btns">
                         <button onclick="gerarLink('${g.id}', '${g.token}')">Copiar Link</button>
                         <button onclick="toggle('${g.id}', '${g.status}')">${g.status=='aberto'?'Fechar':'Abrir'}</button>
@@ -70,17 +70,19 @@
     window.deletar = (id) => confirm("Excluir grupo?") && (db.ref('groups/'+id).remove(), db.ref('messages/'+id).remove());
 
     window.gerarLink = (id, t) => {
-        let baseUrl = window.location.href.split('?')[0].replace('index.html', '') + "chat.html";
-        const urlLonga = `${baseUrl}?g=${id}&t=${t}`;
+        // CORREÇÃO DO CAMINHO PARA GITHUB PAGES
+        let loc = window.location.href.split('?')[0];
+        let baseUrl = loc.substring(0, loc.lastIndexOf('/') + 1);
+        const urlLonga = `${baseUrl}chat.html?g=${id}&t=${t}`;
 
         fetch(`https://tinyurl.com/api-create.php?url=${encodeURIComponent(urlLonga)}`)
             .then(res => res.text())
             .then(urlCurta => {
                 navigator.clipboard.writeText(urlCurta);
-                Swal.fire('Copiado!', urlCurta, 'success');
+                Swal.fire('Copiado!', 'Link Curto: ' + urlCurta, 'success');
             }).catch(() => {
                 navigator.clipboard.writeText(urlLonga);
-                Swal.fire('Copiado!', 'Link original copiado (TinyURL falhou)', 'info');
+                Swal.fire('Copiado!', 'Link Longo copiado!', 'info');
             });
     };
 </script>
