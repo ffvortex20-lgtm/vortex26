@@ -8,11 +8,10 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         :root { --primary: #8a2be2; --bg: #0a0a0a; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: #fff; padding: 20px; display: flex; justify-content: center; }
+        body { font-family: sans-serif; background: var(--bg); color: #fff; padding: 20px; display: flex; justify-content: center; }
         .container { width: 100%; max-width: 500px; background: #16161d; padding: 25px; border-radius: 20px; border: 1px solid #333; }
         input { width: 100%; padding: 12px; margin: 8px 0; background: #000; border: 1px solid #444; color: #fff; border-radius: 10px; box-sizing: border-box; outline: none; }
-        button { padding: 12px; background: var(--primary); color: #fff; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; transition: 0.3s; }
-        button:hover { opacity: 0.8; }
+        button { padding: 12px; background: var(--primary); color: #fff; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; }
         .group-card { background: #000; padding: 15px; border-radius: 15px; margin-top: 15px; border-left: 5px solid var(--primary); }
         .btns { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
         .btn-red { background: #ff4757; } .btn-orange { background: #ffa500; }
@@ -24,7 +23,7 @@
     <div style="background:#000; padding:15px; border-radius:15px;">
         <input type="text" id="name" placeholder="Nome do Grupo">
         <input type="text" id="pic" placeholder="URL da Foto do Grupo">
-        <button onclick="criar()" style="width:100%">CRIAR NOVO GRUPO</button>
+        <button onclick="criar()" style="width:100%">CRIAR GRUPO</button>
     </div>
     <div id="lista"></div>
 </div>
@@ -41,7 +40,7 @@
     function criar() {
         const n = document.getElementById('name').value;
         const p = document.getElementById('pic').value;
-        if(!n || !p) return Swal.fire('Erro','Preencha nome e foto','error');
+        if(!n || !p) return;
         const id = db.ref('groups').push().key;
         const tk = Math.random().toString(36).substring(7);
         db.ref('groups/' + id).set({ id, name: n, pic: p, token: tk, status: "aberto" });
@@ -50,17 +49,14 @@
 
     db.ref('groups').on('value', snap => {
         const div = document.getElementById('lista');
-        div.innerHTML = "<h3 style='margin-top:25px;'>📂 Gerenciar Grupos</h3>";
+        div.innerHTML = "<h3 style='margin-top:20px'>📂 Meus Grupos</h3>";
         snap.forEach(child => {
             const g = child.val();
             div.innerHTML += `
                 <div class="group-card">
-                    <div style="display:flex; align-items:center; gap:10px;">
-                        <img src="${g.pic}" style="width:40px; height:40px; border-radius:50%; object-fit:cover;">
-                        <b>${g.name}</b> <small>(${g.status})</small>
-                    </div>
+                    <b>${g.name}</b> (${g.status})
                     <div class="btns">
-                        <button onclick="copiarLink('${g.id}', '${g.token}')">Copiar Link</button>
+                        <button onclick="gerarLink('${g.id}', '${g.token}')">Copiar Link</button>
                         <button onclick="toggle('${g.id}', '${g.status}')">${g.status=='aberto'?'Fechar':'Abrir'}</button>
                         <button class="btn-orange" onclick="limpar('${g.id}')">Limpar</button>
                         <button class="btn-red" onclick="deletar('${g.id}')">Excluir</button>
@@ -73,10 +69,19 @@
     window.limpar = (id) => confirm("Limpar chat?") && db.ref('messages/'+id).remove();
     window.deletar = (id) => confirm("Excluir grupo?") && (db.ref('groups/'+id).remove(), db.ref('messages/'+id).remove());
 
-    window.copiarLink = (id, t) => {
-        const url = window.location.origin + window.location.pathname.replace('index.html', 'chat.html') + "?g=" + id + "&t=" + t;
-        navigator.clipboard.writeText(url);
-        Swal.fire('Copiado!', 'Link pronto para enviar!', 'success');
+    window.gerarLink = (id, t) => {
+        let baseUrl = window.location.href.split('?')[0].replace('index.html', '') + "chat.html";
+        const urlLonga = `${baseUrl}?g=${id}&t=${t}`;
+
+        fetch(`https://tinyurl.com/api-create.php?url=${encodeURIComponent(urlLonga)}`)
+            .then(res => res.text())
+            .then(urlCurta => {
+                navigator.clipboard.writeText(urlCurta);
+                Swal.fire('Copiado!', urlCurta, 'success');
+            }).catch(() => {
+                navigator.clipboard.writeText(urlLonga);
+                Swal.fire('Copiado!', 'Link original copiado (TinyURL falhou)', 'info');
+            });
     };
 </script>
 </body>
