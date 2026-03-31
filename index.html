@@ -3,57 +3,42 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vortex Admin - Criador de Grupos</title>
+    <title>Vortex Admin - Elite</title>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root { --primary: #8a2be2; --bg: #0a0a0a; --card: #161616; }
         body { font-family: 'Poppins', sans-serif; background: var(--bg); color: #eee; margin: 0; padding: 20px; display: flex; justify-content: center; }
-        .container { width: 100%; max-width: 500px; background: var(--card); padding: 25px; border-radius: 20px; border: 1px solid #333; }
-        h1 { color: var(--primary); font-size: 22px; text-align: center; margin-bottom: 20px; }
-        .section { background: #000; padding: 15px; border-radius: 15px; margin-bottom: 15px; border: 1px solid #222; }
-        h3 { font-size: 14px; color: var(--primary); margin-bottom: 10px; text-transform: uppercase; }
+        .container { width: 100%; max-width: 600px; background: var(--card); padding: 25px; border-radius: 20px; border: 1px solid #333; }
+        .section { background: #000; padding: 15px; border-radius: 15px; margin-bottom: 20px; border: 1px solid #222; }
         input { background: #111; border: 1px solid #333; color: white; padding: 12px; border-radius: 10px; width: 100%; margin-bottom: 10px; outline: none; box-sizing: border-box; }
-        button { cursor: pointer; border: none; padding: 12px; border-radius: 10px; font-weight: bold; color: white; transition: 0.3s; width: 100%; background: var(--primary); }
-        button:active { transform: scale(0.98); }
-        .status { padding: 10px; text-align: center; border-radius: 10px; margin-bottom: 15px; font-weight: bold; border: 1px solid #333; }
-        .online { color: #28a745; background: rgba(40,167,69,0.1); border-color: #28a745; }
-        .offline { color: #dc3545; background: rgba(220,53,69,0.1); border-color: #dc3545; }
+        button { cursor: pointer; border: none; padding: 10px; border-radius: 8px; font-weight: bold; color: white; background: var(--primary); transition: 0.3s; }
+        button:hover { opacity: 0.8; }
+        .group-item { background: #1a1a1a; padding: 15px; border-radius: 12px; margin-bottom: 15px; border-left: 4px solid var(--primary); }
+        .group-controls { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+        .monitor-box { background: #050505; height: 100px; overflow-y: auto; font-size: 11px; padding: 10px; margin-top: 10px; border-radius: 8px; color: #888; border: 1px solid #222; }
     </style>
 </head>
 <body>
 <div class="container">
-    <h1>👑 Vortex Manager</h1>
-    
-    <div id="st" class="status">CARREGANDO...</div>
-
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px;">
-        <button style="background:#28a745" onclick="setChat(true)">ABRIR GRUPO</button>
-        <button style="background:#dc3545" onclick="setChat(false)">FECHAR GRUPO</button>
-    </div>
+    <h1><i class="fas fa-crown"></i> Vortex Master Control</h1>
 
     <div class="section">
-        <h3>✨ Configurar Grupo (Exclusivo Admin)</h3>
-        <input type="text" id="gn" placeholder="Nome do Grupo (Ex: Turma do Vortex)">
-        <input type="text" id="gp" placeholder="URL da Foto do Grupo">
-        <button onclick="updateGroup()">CRIAR / ATUALIZAR GRUPO</button>
+        <h3><i class="fas fa-plus-circle"></i> Criar Novo Grupo</h3>
+        <input type="text" id="newGroupName" placeholder="Nome do Grupo">
+        <input type="text" id="newGroupPic" placeholder="URL da Foto do Grupo">
+        <button onclick="createGroup()" style="width: 100%;">CRIAR GRUPO</button>
     </div>
 
-    <div class="section">
-        <h3>🛡️ Promover Membro</h3>
-        <input type="text" id="admN" placeholder="Nome exato do usuário...">
-        <button style="background:#333" onclick="giveAdmin()">DAR COROA 👑</button>
-    </div>
-
-    <div class="section">
-        <h3>🔗 Convite</h3>
-        <button style="background:#444" onclick="copyLink()">COPIAR LINK DO CHAT</button>
+    <div id="groupsList">
+        <h3><i class="fas fa-layer-group"></i> Meus Grupos</h3>
+        <p style="color: #666;">Carregando...</p>
     </div>
 </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    import { getDatabase, ref, set, push, onValue, remove, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyCbLVtiN0JlJ5qjMWyYtwUHEs8NP6DTaPM",
@@ -68,33 +53,84 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    window.setChat = (s) => set(ref(db, 'chatStatus'), s);
+    const generateToken = () => Math.random().toString(36).substring(2, 12);
 
-    window.updateGroup = () => {
-        const name = document.getElementById('gn').value;
-        const pic = document.getElementById('gp').value;
-        if(name && pic) {
-            set(ref(db, 'groupConfig'), { name, pic })
-            .then(() => Swal.fire('Grupo Criado!', '', 'success'));
-        }
+    window.createGroup = () => {
+        const name = document.getElementById('newGroupName').value;
+        const pic = document.getElementById('newGroupPic').value;
+        if(!name || !pic) return Swal.fire('Preencha nome e foto!');
+
+        const newGroupRef = push(ref(db, 'groups'));
+        set(newGroupRef, {
+            id: newGroupRef.key,
+            name: name,
+            pic: pic,
+            isOpen: true,
+            inviteToken: generateToken()
+        });
+        document.getElementById('newGroupName').value = "";
+        document.getElementById('newGroupPic').value = "";
     };
 
-    window.giveAdmin = () => {
-        const user = document.getElementById('admN').value.trim();
-        if(user) set(ref(db, 'admins/' + user.toLowerCase()), true).then(() => Swal.fire('Admin Adicionado!'));
-    };
-
-    window.copyLink = () => {
-        const url = window.location.href.replace('index.html', 'chat.html');
-        navigator.clipboard.writeText(url);
-        Swal.fire('Link Copiado!');
-    };
-
-    onValue(ref(db, 'chatStatus'), s => {
-        const el = document.getElementById('st');
-        el.innerText = s.val() ? "GRUPO ATIVO" : "GRUPO DESATIVADO";
-        el.className = `status ${s.val() ? 'online' : 'offline'}`;
+    onValue(ref(db, 'groups'), (snapshot) => {
+        const list = document.getElementById('groupsList');
+        list.innerHTML = "<h3><i class='fas fa-layer-group'></i> Meus Grupos</h3>";
+        snapshot.forEach((child) => {
+            const g = child.val();
+            const gDiv = document.createElement('div');
+            gDiv.className = 'group-item';
+            gDiv.innerHTML = `
+                <div style="display:flex; align-items:center; gap:12px;">
+                    <img src="${g.pic}" style="width:45px; height:45px; border-radius:50%; object-fit:cover;">
+                    <div>
+                        <b>${g.name}</b><br>
+                        <small style="color:${g.isOpen ? '#28a745' : '#dc3545'}">${g.isOpen ? 'ABERTO' : 'FECHADO'}</small>
+                    </div>
+                </div>
+                <div class="group-controls">
+                    <button onclick="toggleGroup('${g.id}', ${!g.isOpen})">${g.isOpen ? 'Fechar' : 'Abrir'}</button>
+                    <button onclick="copyLink('${g.id}', '${g.inviteToken}')" style="background:#333">Copiar Link</button>
+                    <button onclick="resetInvite('${g.id}')" style="background:#f39c12">Redefinir</button>
+                    <button onclick="deleteGroup('${g.id}')" style="background:#dc3545">Excluir</button>
+                </div>
+                <div class="monitor-box" id="mon-${g.id}">Monitorando chat...</div>
+            `;
+            list.appendChild(gDiv);
+            setupMonitor(g.id);
+        });
     });
+
+    window.toggleGroup = (id, status) => update(ref(db, `groups/${id}`), { isOpen: status });
+    
+    window.resetInvite = (id) => update(ref(db, `groups/${id}`), { inviteToken: generateToken() }).then(() => Swal.fire('Link Atualizado!'));
+
+    window.copyLink = (id, token) => {
+        const url = window.location.href.replace('index.html', 'chat.html') + `?g=${id}&t=${token}`;
+        navigator.clipboard.writeText(url);
+        Swal.fire('Copiado!', 'Link de convite pronto.', 'success');
+    };
+
+    window.deleteGroup = (id) => {
+        Swal.fire({ title: 'Apagar Grupo e Mensagens?', showCancelButton: true, confirmButtonColor: '#dc3545' }).then(r => {
+            if(r.isConfirmed) {
+                remove(ref(db, `groups/${id}`));
+                remove(ref(db, `messages/${id}`));
+            }
+        });
+    };
+
+    function setupMonitor(id) {
+        onValue(ref(db, `messages/${id}`), snap => {
+            const mon = document.getElementById('mon-'+id);
+            if(!mon) return;
+            mon.innerHTML = "";
+            snap.forEach(m => {
+                const d = m.val();
+                mon.innerHTML += `<div><b>${d.user}:</b> ${d.type === 'text' ? d.text : '[Áudio/Mídia]'}</div>`;
+            });
+            mon.scrollTop = mon.scrollHeight;
+        });
+    }
 </script>
 </body>
 </html>
