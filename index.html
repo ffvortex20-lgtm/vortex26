@@ -3,53 +3,75 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vortex Admin - Master</title>
+    <title>Vortex Admin - Elite</title>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        :root { --primary: #8a2be2; --bg: #0a0a0a; --card: #161616; }
-        body { font-family: 'Poppins', sans-serif; background: var(--bg); color: #eee; margin: 0; padding: 20px; display: flex; justify-content: center; }
-        .container { width: 100%; max-width: 500px; background: var(--card); padding: 25px; border-radius: 20px; border: 1px solid #333; }
-        h1 { color: var(--primary); font-size: 22px; text-align: center; }
-        .status-badge { padding: 12px; border-radius: 12px; font-weight: bold; margin-bottom: 20px; text-align: center; border: 1px solid #333; }
+        :root { --primary: #8a2be2; --bg: #0a0a0a; --card: #161616; --text: #eee; }
+        * { box-sizing: border-box; }
+        body { font-family: 'Poppins', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; display: flex; justify-content: center; min-height: 100vh; }
+        
+        .container { width: 100%; max-width: 500px; background: var(--card); padding: 25px; border-radius: 24px; border: 1px solid #333; box-shadow: 0 15px 35px rgba(0,0,0,0.7); height: fit-content; }
+        
+        h1 { color: var(--primary); font-size: 22px; text-align: center; margin-bottom: 20px; text-transform: uppercase; letter-spacing: 2px; }
+        
+        .status-badge { padding: 15px; border-radius: 15px; font-weight: bold; margin-bottom: 20px; text-align: center; font-size: 14px; border: 1px solid #333; }
         .open { background: rgba(40, 167, 69, 0.1); color: #28a745; border-color: #28a745; }
         .closed { background: rgba(220, 53, 69, 0.1); color: #dc3545; border-color: #dc3545; }
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
-        button { cursor: pointer; border: none; padding: 12px; border-radius: 10px; font-weight: bold; color: white; transition: 0.3s; }
-        .btn-open { background: #28a745; } .btn-close { background: #dc3545; }
-        .section { background: #000; padding: 15px; border-radius: 15px; margin-bottom: 15px; border: 1px solid #222; }
-        input { background: #111; border: 1px solid #333; color: white; padding: 10px; border-radius: 8px; width: 100%; margin-bottom: 8px; outline: none; }
-        .btn-main { background: var(--primary); width: 100%; }
-        .msg-item { display: flex; justify-content: space-between; padding: 8px; border-bottom: 1px solid #222; font-size: 13px; }
+
+        .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+        button { cursor: pointer; border: none; padding: 14px; border-radius: 12px; font-weight: 700; transition: 0.3s; color: white; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 14px; }
+        .btn-open { background: #28a745; }
+        .btn-close { background: #dc3545; }
+        .btn-promo { background: var(--primary); width: 100%; margin-top: 10px; }
+        button:hover { opacity: 0.8; transform: translateY(-2px); }
+
+        .section { background: #000; padding: 18px; border-radius: 18px; margin-bottom: 20px; border: 1px solid #222; }
+        .section h3 { margin: 0 0 12px 0; font-size: 14px; color: #888; display: flex; align-items: center; gap: 8px; }
+        
+        input { background: #111; border: 1px solid #333; color: white; padding: 12px; border-radius: 10px; width: 100%; outline: none; transition: 0.3s; }
+        input:focus { border-color: var(--primary); }
+
+        .link-display { background: #0a0a0a; padding: 12px; border-radius: 10px; font-family: monospace; font-size: 11px; color: var(--primary); word-break: break-all; border: 1px dashed #444; margin-bottom: 10px; text-align: center; }
+
+        .monitor-list { height: 200px; overflow-y: auto; padding-right: 5px; }
+        .msg-card { display: flex; justify-content: space-between; align-items: center; background: #1a1a1a; padding: 10px; border-radius: 10px; margin-bottom: 8px; font-size: 13px; border-left: 3px solid var(--primary); }
+        .del-btn { background: #ff4757; padding: 6px 12px; border-radius: 8px; font-size: 10px; width: auto; }
+        
+        /* Scrollbar Slim */
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
     </style>
 </head>
 <body>
+
 <div class="container">
-    <h1>👑 Vortex Control</h1>
-    <div id="statusB" class="status-badge">Carregando...</div>
-    <div class="grid">
-        <button class="btn-open" onclick="setStatus(true)">ABRIR CHAT</button>
-        <button class="btn-close" onclick="setStatus(false)">FECHAR CHAT</button>
+    <h1><i class="fas fa-crown"></i> Vortex Master</h1>
+    
+    <div id="statusBadge" class="status-badge closed">CARREGANDO...</div>
+
+    <div class="btn-grid">
+        <button class="btn-open" id="btnOpen"><i class="fas fa-power-off"></i> ABRIR</button>
+        <button class="btn-close" id="btnClose"><i class="fas fa-times-circle"></i> FECHAR</button>
     </div>
+
     <div class="section">
-        <h3>🏠 Perfil do Grupo</h3>
-        <input type="text" id="gName" placeholder="Nome do Grupo">
-        <input type="text" id="gPic" placeholder="URL da Foto do Grupo">
-        <button class="btn-main" onclick="saveGroup()">Atualizar Grupo</button>
+        <h3><i class="fas fa-share-alt"></i> LINK DO CHAT</h3>
+        <div class="link-display" id="chatUrlTxt">Gerando...</div>
+        <button onclick="copyChatLink()" style="background: #333; width: 100%; font-size: 12px; padding: 10px;">
+            <i class="fas fa-copy"></i> COPIAR LINK
+        </button>
     </div>
+
     <div class="section">
-        <h3>🛡️ Promover Admin</h3>
-        <input type="text" id="targetU" placeholder="Nome do usuário...">
-        <button class="btn-main" onclick="promo()">Dar Admin</button>
+        <h3><i class="fas fa-user-shield"></i> PROMOVER USUÁRIO</h3>
+        <input type="text" id="targetUser" placeholder="Nome exato do usuário...">
+        <button class="btn-promo" id="promoBtn">CONCEDER ADMIN 👑</button>
     </div>
-    <div class="section">
-        <h3>🔗 Link do Chat</h3>
-        <div id="linkDisplay" style="font-size:10px; color:var(--primary); margin-bottom:5px;"></div>
-        <button class="btn-main" style="background:#333" onclick="copyL()">Copiar Link</button>
-    </div>
-    <div class="section">
-        <h3>👁️ Monitor</h3>
-        <div id="monitor" style="height:150px; overflow-y:auto;"></div>
+
+    <div class="section" style="margin-bottom: 0;">
+        <h3><i class="fas fa-eye"></i> MONITORAMENTO</h3>
+        <div class="monitor-list" id="monitor"></div>
     </div>
 </div>
 
@@ -57,39 +79,69 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getDatabase, ref, set, onValue, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-    const firebaseConfig = { /* SUAS CONFIGS AQUI */ };
+    const firebaseConfig = {
+        apiKey: "AIzaSyCbLVtiN0JlJ5qjMWyYtwUHEs8NP6DTaPM",
+        authDomain: "chat-4b3e3.firebaseapp.com",
+        databaseURL: "https://chat-4b3e3-default-rtdb.firebaseio.com",
+        projectId: "chat-4b3e3",
+        storageBucket: "chat-4b3e3.firebasestorage.app",
+        messagingSenderId: "445315176420",
+        appId: "1:445315176420:web:cc468a5c89b8706a7059f1"
+    };
+
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    // Funções Globalizadas
-    window.setStatus = (s) => set(ref(db, 'chatStatus'), s);
-    window.saveGroup = () => {
-        const n = document.getElementById('gName').value;
-        const p = document.getElementById('gPic').value;
-        if(n && p) set(ref(db, 'groupConfig'), { name: n, pic: p });
-    };
-    window.promo = () => {
-        const u = document.getElementById('targetU').value.trim();
-        if(u) set(ref(db, 'admins/' + u.toLowerCase()), true);
+    // --- CORREÇÃO DO LINK ---
+    const rawUrl = window.location.href;
+    const cleanUrl = rawUrl.split('?')[0].split('#')[0];
+    const finalChatUrl = cleanUrl.replace('index.html', 'chat.html');
+    document.getElementById('chatUrlTxt').innerText = finalChatUrl;
+
+    window.copyChatLink = () => {
+        navigator.clipboard.writeText(finalChatUrl);
+        Swal.fire({ title: 'Copiado!', icon: 'success', background: '#161616', color: '#fff', confirmButtonColor: '#8a2be2' });
     };
 
-    const chatL = window.location.href.replace('index.html', 'chat.html');
-    document.getElementById('linkDisplay').innerText = chatL;
-    window.copyL = () => { navigator.clipboard.writeText(chatL); Swal.fire('Copiado!'); };
-
+    // --- STATUS ---
     onValue(ref(db, 'chatStatus'), s => {
-        const b = document.getElementById('statusB');
-        b.innerText = s.val() ? "CHAT ABERTO" : "CHAT FECHADO";
-        b.className = `status-badge ${s.val() ? 'open' : 'closed'}`;
+        const badge = document.getElementById('statusBadge');
+        const isOpen = s.val();
+        badge.innerText = isOpen ? "SALA ABERTA" : "SALA FECHADA";
+        badge.className = `status-badge ${isOpen ? 'open' : 'closed'}`;
     });
 
-    onValue(ref(db, 'messages'), snap => {
-        const m = document.getElementById('monitor'); m.innerHTML = "";
+    document.getElementById('btnOpen').onclick = () => set(ref(db, 'chatStatus'), true);
+    document.getElementById('btnClose').onclick = () => set(ref(db, 'chatStatus'), false);
+
+    // --- PROMOVER ---
+    document.getElementById('promoBtn').onclick = () => {
+        const user = document.getElementById('targetUser').value.trim();
+        if(user) {
+            set(ref(db, 'admins/' + user.toLowerCase()), true);
+            Swal.fire({ title: 'Promovido!', text: `${user} agora é Admin`, icon: 'success', background: '#161616', color: '#fff' });
+            document.getElementById('targetUser').value = "";
+        }
+    };
+
+    // --- MONITOR ---
+    onValue(ref(db, 'messages'), (snap) => {
+        const list = document.getElementById('monitor');
+        list.innerHTML = "";
         snap.forEach(c => {
-            m.innerHTML += `<div class="msg-item"><span>${c.val().user}: ${c.val().text.substring(0,15)}</span><button onclick="del('${c.key}')" style="background:red; font-size:9px;">X</button></div>`;
+            const m = c.val();
+            const prev = m.type === 'audio' ? '🎤 Áudio' : m.text;
+            const card = document.createElement('div');
+            card.className = 'msg-card';
+            card.innerHTML = `
+                <span><b>${m.user}:</b> ${prev.substring(0,18)}...</span>
+                <button class="del-btn" onclick="deleteMsg('${c.key}')">Apagar</button>
+            `;
+            list.appendChild(card);
         });
     });
-    window.del = (id) => remove(ref(db, 'messages/' + id));
+
+    window.deleteMsg = (id) => remove(ref(db, 'messages/' + id));
 </script>
 </body>
 </html>
