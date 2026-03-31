@@ -3,56 +3,76 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vortex Control - Admin</title>
+    <title>Vortex Admin - Elite</title>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root { --primary: #8a2be2; --bg: #0a0a0a; --card: #161616; --text: #eee; }
-        body { font-family: 'Poppins', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; display: flex; justify-content: center; }
-        .container { width: 100%; max-width: 600px; background: var(--card); padding: 30px; border-radius: 20px; border: 1px solid #333; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        h1 { color: var(--primary); font-size: 24px; margin-bottom: 25px; text-align: center; }
-        .status-badge { padding: 12px; border-radius: 12px; font-weight: bold; margin-bottom: 20px; border: 1px solid #333; transition: 0.3s; text-align: center; }
-        .open { background: #28a74511; color: #28a745; border-color: #28a745; }
-        .closed { background: #dc354511; color: #dc3545; border-color: #dc3545; }
-        .grid-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
-        button { cursor: pointer; border: none; padding: 15px; border-radius: 12px; font-weight: 600; transition: 0.3s; color: white; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        * { box-sizing: border-box; }
+        body { font-family: 'Poppins', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; display: flex; justify-content: center; min-height: 100vh; }
+        
+        .container { width: 100%; max-width: 500px; background: var(--card); padding: 25px; border-radius: 24px; border: 1px solid #333; box-shadow: 0 15px 35px rgba(0,0,0,0.7); height: fit-content; }
+        
+        h1 { color: var(--primary); font-size: 22px; text-align: center; margin-bottom: 20px; text-transform: uppercase; letter-spacing: 2px; }
+        
+        .status-badge { padding: 15px; border-radius: 15px; font-weight: bold; margin-bottom: 20px; text-align: center; font-size: 14px; border: 1px solid #333; }
+        .open { background: rgba(40, 167, 69, 0.1); color: #28a745; border-color: #28a745; }
+        .closed { background: rgba(220, 53, 69, 0.1); color: #dc3545; border-color: #dc3545; }
+
+        .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+        button { cursor: pointer; border: none; padding: 14px; border-radius: 12px; font-weight: 700; transition: 0.3s; color: white; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 14px; }
         .btn-open { background: #28a745; }
         .btn-close { background: #dc3545; }
-        .btn-promo { background: var(--primary); width: 100%; }
-        .section { background: #000; padding: 20px; border-radius: 15px; margin-bottom: 20px; border: 1px solid #222; }
-        input { background: #111; border: 1px solid #333; color: white; padding: 12px; border-radius: 10px; width: calc(100% - 24px); margin-bottom: 10px; outline: none; }
-        .msg-list { text-align: left; height: 250px; overflow-y: auto; }
-        .msg-item { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #222; align-items: center; font-size: 14px; }
-        .del-btn { background: #ff4757; padding: 5px 10px; border-radius: 5px; font-size: 11px; }
-        .link-display { background: #111; padding: 10px; border-radius: 8px; font-family: monospace; font-size: 11px; color: #8a2be2; word-break: break-all; margin-bottom: 10px; border: 1px dashed #333; }
+        .btn-promo { background: var(--primary); width: 100%; margin-top: 10px; }
+        button:hover { opacity: 0.8; transform: translateY(-2px); }
+
+        .section { background: #000; padding: 18px; border-radius: 18px; margin-bottom: 20px; border: 1px solid #222; }
+        .section h3 { margin: 0 0 12px 0; font-size: 14px; color: #888; display: flex; align-items: center; gap: 8px; }
+        
+        input { background: #111; border: 1px solid #333; color: white; padding: 12px; border-radius: 10px; width: 100%; outline: none; transition: 0.3s; }
+        input:focus { border-color: var(--primary); }
+
+        .link-display { background: #0a0a0a; padding: 12px; border-radius: 10px; font-family: monospace; font-size: 11px; color: var(--primary); word-break: break-all; border: 1px dashed #444; margin-bottom: 10px; text-align: center; }
+
+        .monitor-list { height: 200px; overflow-y: auto; padding-right: 5px; }
+        .msg-card { display: flex; justify-content: space-between; align-items: center; background: #1a1a1a; padding: 10px; border-radius: 10px; margin-bottom: 8px; font-size: 13px; border-left: 3px solid var(--primary); }
+        .del-btn { background: #ff4757; padding: 6px 12px; border-radius: 8px; font-size: 10px; width: auto; }
+        
+        /* Scrollbar Slim */
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1><i class="fas fa-shield-alt"></i> Painel Admin</h1>
+    <h1><i class="fas fa-crown"></i> Vortex Master</h1>
     
-    <div id="statusBadge" class="status-badge">Carregando...</div>
+    <div id="statusBadge" class="status-badge closed">CARREGANDO...</div>
 
-    <div class="grid-btns">
-        <button class="btn-open" id="btnOpen"><i class="fas fa-lock-open"></i> Abrir Chat</button>
-        <button class="btn-close" id="btnClose"><i class="fas fa-lock"></i> Fechar Chat</button>
+    <div class="btn-grid">
+        <button class="btn-open" id="btnOpen"><i class="fas fa-power-off"></i> ABRIR</button>
+        <button class="btn-close" id="btnClose"><i class="fas fa-times-circle"></i> FECHAR</button>
     </div>
 
     <div class="section">
-        <h3 style="margin-top:0"><i class="fas fa-link"></i> Link de Convite (Usuários)</h3>
-        <div class="link-display" id="chatLinkUrl">Gerando link...</div>
-        <button onclick="copyRealChatLink()" style="background: #333; width: 100%;"><i class="fas fa-copy"></i> Copiar Link do Chat</button>
+        <h3><i class="fas fa-share-alt"></i> LINK DO CHAT</h3>
+        <div class="link-display" id="chatUrlTxt">Gerando...</div>
+        <button onclick="copyChatLink()" style="background: #333; width: 100%; font-size: 12px; padding: 10px;">
+            <i class="fas fa-copy"></i> COPIAR LINK
+        </button>
     </div>
 
     <div class="section">
-        <h3 style="margin-top:0"><i class="fas fa-crown"></i> Promover Usuário</h3>
+        <h3><i class="fas fa-user-shield"></i> PROMOVER USUÁRIO</h3>
         <input type="text" id="targetUser" placeholder="Nome exato do usuário...">
-        <button class="btn-promo" id="promoBtn">Dar Admin</button>
+        <button class="btn-promo" id="promoBtn">CONCEDER ADMIN 👑</button>
     </div>
 
-    <h3><i class="fas fa-history"></i> Monitor de Mensagens</h3>
-    <div class="msg-list" id="monitor"></div>
+    <div class="section" style="margin-bottom: 0;">
+        <h3><i class="fas fa-eye"></i> MONITORAMENTO</h3>
+        <div class="monitor-list" id="monitor"></div>
+    </div>
 </div>
 
 <script type="module">
@@ -72,55 +92,56 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    // Lógica para gerar o link correto do CHAT
-    const currentUrl = window.location.href;
-    const finalChatUrl = currentUrl.includes('index.html') 
-        ? currentUrl.replace('index.html', 'chat.html') 
-        : currentUrl.endsWith('/') ? currentUrl + 'chat.html' : currentUrl + '/chat.html';
+    // --- CORREÇÃO DO LINK ---
+    const rawUrl = window.location.href;
+    const cleanUrl = rawUrl.split('?')[0].split('#')[0];
+    const finalChatUrl = cleanUrl.replace('index.html', 'chat.html');
+    document.getElementById('chatUrlTxt').innerText = finalChatUrl;
 
-    document.getElementById('chatLinkUrl').innerText = finalChatUrl;
-
-    window.copyRealChatLink = () => {
+    window.copyChatLink = () => {
         navigator.clipboard.writeText(finalChatUrl);
-        Swal.fire('Copiado!', 'O link da sala de chat está na sua área de transferência.', 'success');
+        Swal.fire({ title: 'Copiado!', icon: 'success', background: '#161616', color: '#fff', confirmButtonColor: '#8a2be2' });
     };
 
-    // Status e Botões
+    // --- STATUS ---
     onValue(ref(db, 'chatStatus'), s => {
         const badge = document.getElementById('statusBadge');
         const isOpen = s.val();
-        badge.innerText = isOpen ? "STATUS: CHAT ABERTO" : "STATUS: CHAT FECHADO";
+        badge.innerText = isOpen ? "SALA ABERTA" : "SALA FECHADA";
         badge.className = `status-badge ${isOpen ? 'open' : 'closed'}`;
     });
 
     document.getElementById('btnOpen').onclick = () => set(ref(db, 'chatStatus'), true);
     document.getElementById('btnClose').onclick = () => set(ref(db, 'chatStatus'), false);
 
-    // Promover
+    // --- PROMOVER ---
     document.getElementById('promoBtn').onclick = () => {
         const user = document.getElementById('targetUser').value.trim();
         if(user) {
             set(ref(db, 'admins/' + user.toLowerCase()), true);
-            Swal.fire('Coroa Entregue!', `${user} agora é Admin.`, 'success');
+            Swal.fire({ title: 'Promovido!', text: `${user} agora é Admin`, icon: 'success', background: '#161616', color: '#fff' });
             document.getElementById('targetUser').value = "";
         }
     };
 
-    // Monitoramento
+    // --- MONITOR ---
     onValue(ref(db, 'messages'), (snap) => {
-        const div = document.getElementById('monitor');
-        div.innerHTML = "";
+        const list = document.getElementById('monitor');
+        list.innerHTML = "";
         snap.forEach(c => {
             const m = c.val();
-            const textPreview = m.type === 'audio' ? '🎤 Áudio' : m.text;
-            div.innerHTML += `<div class="msg-item">
-                <span><b>${m.user}:</b> ${textPreview.substring(0,20)}...</span>
-                <button class="del-btn" onclick="removeMsg('${c.key}')">Apagar</button>
-            </div>`;
+            const prev = m.type === 'audio' ? '🎤 Áudio' : m.text;
+            const card = document.createElement('div');
+            card.className = 'msg-card';
+            card.innerHTML = `
+                <span><b>${m.user}:</b> ${prev.substring(0,18)}...</span>
+                <button class="del-btn" onclick="deleteMsg('${c.key}')">Apagar</button>
+            `;
+            list.appendChild(card);
         });
     });
 
-    window.removeMsg = (id) => remove(ref(db, 'messages/' + id));
+    window.deleteMsg = (id) => remove(ref(db, 'messages/' + id));
 </script>
 </body>
 </html>
