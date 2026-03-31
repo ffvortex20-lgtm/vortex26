@@ -3,131 +3,182 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chat</title>
+    <title>Vortex Chat</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
-        :root { --primary: #8a2be2; --bg: #0b0b0e; --panel: #16161d; }
-        body { background: var(--bg); color: #fff; font-family: sans-serif; margin: 0; display: flex; justify-content: center; height: 100vh; overflow: hidden; }
+        :root { --primary: #8a2be2; --bg: #0b0b0e; --panel: #16161d; --user-msg: #20202b; --owner-msg: #2d1b4d; }
+        body { background: var(--bg); color: #fff; font-family: 'Segoe UI', sans-serif; margin: 0; display: flex; justify-content: center; height: 100vh; overflow: hidden; }
         #app { width: 100%; max-width: 500px; display: flex; flex-direction: column; background: var(--panel); position: relative; }
-        
-        /* Cabeçalho Estilo WhatsApp */
-        .header { background: #1f1f29; padding: 10px 15px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid #333; }
-        .header img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; background: #333; }
-        
-        #chat-window { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 10px; background: #0b0b0e; }
-        .msg { padding: 8px 12px; border-radius: 15px; max-width: 80%; font-size: 14px; position: relative; }
-        .received { background: #20202b; align-self: flex-start; }
-        .owner { background: #2d1b4d; align-self: flex-end; border: 1px solid var(--primary); }
-        
-        .input-area { background: #1f1f29; padding: 10px; display: flex; align-items: center; gap: 8px; }
-        .input-box { flex: 1; background: #2c2c3a; border-radius: 20px; display: flex; align-items: center; padding: 0 15px; }
-        input { background: none; border: none; color: #fff; padding: 10px; flex: 1; outline: none; }
-        .btn { width: 40px; height: 40px; border-radius: 50%; border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; color: white; background: var(--primary); }
-        
-        #login { position: absolute; inset: 0; background: #0b0b0e; z-index: 100; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .header { background: #1f1f29; padding: 15px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid #333; }
+        #chat-window { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 12px; }
+        .msg { padding: 10px 14px; border-radius: 18px; max-width: 85%; font-size: 15px; word-wrap: break-word; }
+        .msg.received { background: var(--user-msg); align-self: flex-start; border-bottom-left-radius: 2px; }
+        .msg.owner { background: var(--owner-msg); align-self: flex-end; border-bottom-right-radius: 2px; border: 1px solid var(--primary); }
+        .verified { color: #1da1f2; margin-left: 4px; }
+        .mention-all { background: #ff4757; color: white; padding: 2px 5px; border-radius: 4px; font-weight: bold; }
+        audio { filter: invert(1); max-width: 100%; }
+        img, video { width: 100%; border-radius: 10px; margin-top: 5px; }
+        .input-area { background: #1f1f29; padding: 12px; display: flex; align-items: center; gap: 8px; }
+        .input-group { flex: 1; background: #2c2c3a; border-radius: 25px; display: flex; align-items: center; padding: 0 15px; }
+        input { background: none; border: none; color: #fff; padding: 12px; flex: 1; outline: none; }
+        .btn-send { background: var(--primary); color: white; width: 45px; height: 45px; border-radius: 50%; border: none; cursor: pointer; }
+        .recording { background: #ff4757 !important; }
+        #profile-modal { position: absolute; inset: 0; background: var(--bg); z-index: 100; display: flex; flex-direction: column; align-items: center; justify-content: center; }
         .hidden { display: none !important; }
-        audio { filter: invert(1); width: 200px; }
     </style>
 </head>
 <body>
+
 <div id="app">
-    <div id="login" class="hidden">
-        <h2>Vortex Chat</h2>
-        <input type="text" id="nick" placeholder="Seu nome único" style="width: 70%; background: #222; margin-bottom: 10px;">
-        <input type="text" id="avatar" placeholder="URL da sua foto" style="width: 70%; background: #222; margin-bottom: 20px;">
-        <button onclick="entrar()" style="background: var(--primary); padding: 10px 40px; border-radius: 20px; border: none; color: white;">ENTRAR NO GRUPO</button>
+    <div id="profile-modal" class="hidden">
+        <h2>Criar Perfil</h2>
+        <input type="text" id="u-name" placeholder="Nome único..." style="width:70%; background:#222; border-radius:8px; margin-bottom:10px;">
+        <input type="text" id="u-pic" placeholder="Link da Foto (URL)..." style="width:70%; background:#222; border-radius:8px; margin-bottom:20px;">
+        <button onclick="checkAndSave()" style="background:var(--primary); padding:12px 40px; border-radius:20px; border:none; color:white; cursor:pointer;">ENTRAR</button>
     </div>
 
     <div class="header">
-        <img id="gPicH" src="">
-        <div>
-            <div id="gNameH" style="font-weight: bold;">Carregando...</div>
-            <small style="color: #28a745;">online</small>
-        </div>
+        <img src="" id="my-pic-head" style="width:35px; height:35px; border-radius:50%; border:1px solid var(--primary);">
+        <div id="my-name-head" style="font-weight:bold;">Vortex</div>
     </div>
 
     <div id="chat-window"></div>
 
-    <div class="input-area" id="ctrl">
-        <button class="btn" style="background:none; color:#888;" onclick="upMedia()"><i class="fas fa-plus"></i></button>
-        <div class="input-box">
-            <input type="text" id="msgI" placeholder="Mensagem">
-            <button id="recBtn" style="background:none; border:none; color:#888;"><i class="fas fa-microphone"></i></button>
+    <div id="closed-msg" class="hidden" style="text-align:center; padding:20px; color:red;">Chat Fechado pelo Admin</div>
+
+    <div class="input-area" id="controls">
+        <button onclick="sendLinkPrompt()" style="background:none; color:#aaa; border:none; font-size:20px;"><i class="fas fa-plus"></i></button>
+        <div class="input-group">
+            <input type="text" id="msg-in" placeholder="Mensagem...">
+            <button id="rec-btn" style="background:none; border:none; color:#aaa; cursor:pointer; font-size:18px;"><i class="fas fa-microphone"></i></button>
         </div>
-        <button class="btn" onclick="enviar()"><i class="fas fa-paper-plane"></i></button>
+        <button class="btn-send" id="send-btn"><i class="fas fa-paper-plane"></i></button>
     </div>
 </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getDatabase, ref, push, onValue, query, limitToLast, get, set, child } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    import { getDatabase, ref, push, onValue, query, limitToLast, get, child, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-    const firebaseConfig = { /* SUAS CONFIGS AQUI */ };
+    const firebaseConfig = {
+        apiKey: "AIzaSyCbLVtiN0JlJ5qjMWyYtwUHEs8NP6DTaPM",
+        authDomain: "chat-4b3e3.firebaseapp.com",
+        databaseURL: "https://chat-4b3e3-default-rtdb.firebaseio.com",
+        projectId: "chat-4b3e3",
+        storageBucket: "chat-4b3e3.firebasestorage.app",
+        messagingSenderId: "445315176420",
+        appId: "1:445315176420:web:cc468a5c89b8706a7059f1"
+    };
+
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    // 1. Login Nome Único
-    window.entrar = async () => {
-        const n = document.getElementById('nick').value.trim();
-        const p = document.getElementById('avatar').value || "https://cdn-icons-png.flaticon.com/512/149/149071.png";
+    // 1. Nome Único
+    window.checkAndSave = async () => {
+        const n = document.getElementById('u-name').value.trim();
+        const p = document.getElementById('u-pic').value || "https://cdn-icons-png.flaticon.com/512/149/149071.png";
         if(!n) return;
-        const s = await get(child(ref(db), `users/${n.toLowerCase()}`));
-        if(s.exists()) return Swal.fire('Nome em uso!');
-        await set(ref(db, `users/${n.toLowerCase()}`), true);
-        localStorage.setItem('v_u', n); localStorage.setItem('v_p', p);
-        location.reload();
+
+        const snap = await get(child(ref(db), `users/${n.toLowerCase()}`));
+        if(snap.exists()){
+            Swal.fire('Erro', 'Este nome já está em uso!', 'error');
+        } else {
+            await set(ref(db, `users/${n.toLowerCase()}`), true);
+            localStorage.setItem('vortex_u', n);
+            localStorage.setItem('vortex_p', p);
+            location.reload();
+        }
     };
 
-    const myN = localStorage.getItem('v_u'), myP = localStorage.getItem('v_p');
-    let isA = false;
-    if(!myN) document.getElementById('login').classList.remove('hidden');
-    else onValue(ref(db, 'admins/'+myN.toLowerCase()), s => isA = !!s.val());
+    const myN = localStorage.getItem('vortex_u');
+    const myP = localStorage.getItem('vortex_p');
+    let isAdm = false;
 
-    // 2. Info do Grupo
-    onValue(ref(db, 'groupConfig'), s => {
-        if(s.exists()){ document.getElementById('gNameH').innerText = s.val().name; document.getElementById('gPicH').src = s.val().pic; }
+    if(!myN) document.getElementById('profile-modal').classList.remove('hidden');
+    else {
+        document.getElementById('my-pic-head').src = myP;
+        onValue(ref(db, 'admins/' + myN.toLowerCase()), s => {
+            isAdm = !!s.val();
+            document.getElementById('my-name-head').innerText = myN + (isAdm ? " 👑" : "");
+        });
+    }
+
+    // 2. Status Chat
+    onValue(ref(db, 'chatStatus'), s => {
+        document.getElementById('controls').classList.toggle('hidden', !s.val());
+        document.getElementById('closed-msg').classList.toggle('hidden', s.val());
     });
 
-    // 3. Audio Corrigido
-    let rec;
-    document.getElementById('recBtn').onpointerdown = async (e) => {
-        const stream = await navigator.mediaDevices.getUserMedia({audio:true});
-        rec = new MediaRecorder(stream);
-        let chunks = [];
-        rec.ondataavailable = e => chunks.push(e.data);
-        rec.onstop = () => {
-            const blob = new Blob(chunks, {type:'audio/ogg'});
+    // 3. Audio (Fixo)
+    let recorder;
+    let chunks = [];
+    const recBtn = document.getElementById('rec-btn');
+
+    recBtn.onpointerdown = async (e) => {
+        e.preventDefault();
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        recorder = new MediaRecorder(stream);
+        chunks = [];
+        recorder.ondataavailable = ev => chunks.push(ev.data);
+        recorder.onstop = () => {
+            const blob = new Blob(chunks, { type: 'audio/ogg' });
             const reader = new FileReader();
             reader.readAsDataURL(blob);
-            reader.onloadend = () => sendMsg(reader.result, 'audio');
+            reader.onloadend = () => send(reader.result, 'audio');
             stream.getTracks().forEach(t => t.stop());
         };
-        rec.start();
-        document.getElementById('recBtn').style.color = "red";
+        recorder.start();
+        recBtn.classList.add('recording');
+        recBtn.style.color = "red";
     };
-    document.getElementById('recBtn').onpointerup = () => { if(rec){ rec.stop(); document.getElementById('recBtn').style.color = "#888"; }};
 
-    // 4. Enviar e Receber
-    function sendMsg(t, type='text'){
-        push(ref(db, 'messages'), { user: myN, pic: myP, text: t, type: type, isOwner: isA, time: new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) });
+    recBtn.onpointerup = () => {
+        if(recorder) {
+            recorder.stop();
+            recBtn.classList.remove('recording');
+            recBtn.style.color = "#aaa";
+        }
+    };
+
+    // 4. Enviar
+    function send(txt, type='text'){
+        push(ref(db, 'messages'), {
+            user: myN, pic: myP, text: txt, type: type, isOwner: isAdm,
+            time: new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})
+        });
     }
-    window.enviar = () => { const i = document.getElementById('msgI'); if(i.value){ sendMsg(i.value); i.value=""; }};
-    window.upMedia = async () => { const {value:u} = await Swal.fire({title:'Link da Mídia', input:'url'}); if(u) sendMsg(u, 'media'); };
 
+    document.getElementById('send-btn').onclick = () => {
+        const i = document.getElementById('msg-in');
+        if(i.value){ send(i.value); i.value = ""; }
+    };
+
+    window.sendLinkPrompt = async () => {
+        const { value: url } = await Swal.fire({ title: 'Enviar Link', input: 'url', confirmButtonColor: '#8a2be2' });
+        if(url) send(url, 'media');
+    };
+
+    // 5. Receber
     onValue(query(ref(db, 'messages'), limitToLast(30)), snap => {
-        const w = document.getElementById('chat-window'); w.innerHTML = "";
+        const win = document.getElementById('chat-window');
+        win.innerHTML = "";
         snap.forEach(c => {
             const m = c.val();
             const div = document.createElement('div');
             div.className = `msg ${m.isOwner ? 'owner' : 'received'}`;
-            let content = m.text;
-            if(m.type === 'audio') content = `<audio src="${m.text}" controls></audio>`;
-            else if(m.text.match(/\.(jpg|png|gif)/i)) content = `<img src="${m.text}" style="width:100%">`;
-            div.innerHTML = `<b style="font-size:10px; color:${m.isOwner?'#a29bfe':'#888'}">${m.user}</b><br>${content}`;
-            w.appendChild(div);
+            
+            let html = m.text;
+            if(m.type === 'audio') html = `<audio src="${m.text}" controls></audio>`;
+            else if(m.text.match(/\.(jpg|png|gif|webp)/i)) html = `<img src="${m.text}">`;
+            else if(m.text.match(/\.(mp4|webm)/i)) html = `<video src="${m.text}" controls></video>`;
+            
+            if(m.isOwner && html.includes("@todos")) html = html.replace("@todos", "<span class='mention-all'>@TODOS</span>");
+
+            div.innerHTML = `<b>${m.user} ${m.isOwner ? '<i class="fas fa-check-circle verified"></i>' : ''}</b>${html}`;
+            win.appendChild(div);
         });
-        w.scrollTop = w.scrollHeight;
+        win.scrollTop = win.scrollHeight;
     });
 </script>
 </body>
