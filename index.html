@@ -3,96 +3,109 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vortex Admin - Multi Grupos</title>
+    <title>Vortex Master - Admin</title>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        :root { --primary: #8a2be2; --bg: #0a0a0a; --card: #161616; }
-        body { font-family: 'Poppins', sans-serif; background: var(--bg); color: #eee; margin: 0; padding: 20px; display: flex; justify-content: center; }
-        .container { width: 100%; max-width: 600px; background: var(--card); padding: 25px; border-radius: 20px; border: 1px solid #333; }
-        .section { background: #000; padding: 15px; border-radius: 15px; margin-bottom: 20px; border: 1px solid #222; }
-        input { background: #111; border: 1px solid #333; color: white; padding: 12px; border-radius: 10px; width: 100%; margin-bottom: 10px; outline: none; box-sizing: border-box; }
-        button { cursor: pointer; border: none; padding: 10px; border-radius: 8px; font-weight: bold; color: white; background: var(--primary); transition: 0.3s; }
-        .group-item { background: #1a1a1a; padding: 15px; border-radius: 12px; margin-bottom: 15px; border-left: 4px solid var(--primary); }
-        .group-controls { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
-        .monitor-box { background: #050505; height: 100px; overflow-y: auto; font-size: 11px; padding: 10px; margin-top: 10px; border-radius: 8px; color: #888; border: 1px solid #222; }
+        :root { --primary: #8a2be2; --bg: #0a0a0a; --card: #16161d; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: #fff; margin: 0; padding: 20px; display: flex; justify-content: center; }
+        .container { width: 100%; max-width: 500px; background: var(--card); padding: 25px; border-radius: 20px; border: 1px solid #333; }
+        .box { background: #000; padding: 15px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #222; }
+        input { width: 100%; padding: 12px; margin-bottom: 10px; border-radius: 8px; border: 1px solid #333; background: #111; color: #fff; box-sizing: border-box; }
+        button { width: 100%; padding: 12px; border-radius: 8px; border: none; background: var(--primary); color: #fff; font-weight: bold; cursor: pointer; }
+        .group-card { background: #1a1a24; padding: 15px; border-radius: 10px; margin-top: 10px; border-left: 4px solid var(--primary); }
+        .controls { display: flex; gap: 5px; margin-top: 10px; flex-wrap: wrap; }
+        .btn-sm { padding: 8px; font-size: 12px; flex: 1; }
     </style>
 </head>
 <body>
 <div class="container">
-    <h1>👑 Vortex Master</h1>
-    <div class="section">
+    <h2>👑 Vortex Master</h2>
+    <div class="box">
         <h3>➕ Novo Grupo</h3>
-        <input type="text" id="newGroupName" placeholder="Nome do Grupo">
-        <input type="text" id="newGroupPic" placeholder="URL da Foto">
-        <button onclick="createGroup()" style="width: 100%;">CRIAR GRUPO</button>
+        <input type="text" id="gName" placeholder="Nome do Grupo">
+        <input type="text" id="gPic" placeholder="Link da Foto (URL)">
+        <button onclick="criarGrupo()">CRIAR GRUPO</button>
     </div>
-    <div id="groupsList"><h3>📂 Meus Grupos</h3></div>
+
+    <div id="listaGrupos">
+        <h3>📂 Meus Grupos</h3>
+        <p id="loading">Sincronizando com Firebase...</p>
+    </div>
 </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getDatabase, ref, set, push, onValue, remove, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-    const firebaseConfig = { /* SUAS CONFIGS AQUI */ };
+    // SUBSTITUA PELAS SUAS CONFIGS DO FIREBASE
+    const firebaseConfig = {
+        apiKey: "AIzaSy...",
+        databaseURL: "https://seu-projeto.firebaseio.com",
+        projectId: "seu-projeto",
+        appId: "1:..."
+    };
+
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    const genToken = () => Math.random().toString(36).substring(2, 12);
+    const gerarToken = () => Math.random().toString(36).substring(2, 10);
 
-    window.createGroup = () => {
-        const name = document.getElementById('newGroupName').value;
-        const pic = document.getElementById('newGroupPic').value;
-        if(name && pic) {
-            const newRef = push(ref(db, 'groups'));
-            set(newRef, { id: newRef.key, name, pic, isOpen: true, inviteToken: genToken() });
-            document.getElementById('newGroupName').value = ""; document.getElementById('newGroupPic').value = "";
-        }
+    window.criarGrupo = () => {
+        const name = document.getElementById('gName').value;
+        const pic = document.getElementById('gPic').value;
+        if(!name || !pic) return Swal.fire('Erro', 'Preencha nome e foto', 'error');
+
+        const novoRef = push(ref(db, 'groups'));
+        set(novoRef, {
+            id: novoRef.key,
+            name: name,
+            pic: pic,
+            isOpen: true,
+            inviteToken: gerarToken()
+        }).then(() => {
+            Swal.fire('Sucesso', 'Grupo criado!', 'success');
+            document.getElementById('gName').value = "";
+            document.getElementById('gPic').value = "";
+        });
     };
 
-    onValue(ref(db, 'groups'), snap => {
-        const list = document.getElementById('groupsList'); list.innerHTML = "<h3>📂 Meus Grupos</h3>";
-        snap.forEach(c => {
-            const g = c.val();
+    onValue(ref(db, 'groups'), (snap) => {
+        const lista = document.getElementById('listaGrupos');
+        lista.innerHTML = "<h3>📂 Meus Grupos</h3>";
+        if(!snap.exists()) lista.innerHTML += "<p>Nenhum grupo ativo.</p>";
+        
+        snap.forEach((child) => {
+            const g = child.val();
             const div = document.createElement('div');
-            div.className = 'group-item';
+            div.className = 'group-card';
             div.innerHTML = `
                 <div style="display:flex; align-items:center; gap:10px;">
                     <img src="${g.pic}" style="width:40px; height:40px; border-radius:50%; object-fit:cover;">
                     <b>${g.name}</b>
                 </div>
-                <div class="group-controls">
-                    <button onclick="toggleG('${g.id}', ${!g.isOpen})">${g.isOpen ? 'Fechar' : 'Abrir'}</button>
-                    <button onclick="copyL('${g.id}', '${g.inviteToken}')" style="background:#333">Link Chat</button>
-                    <button onclick="resetL('${g.id}')" style="background:#f39c12">Redefinir</button>
-                    <button onclick="delG('${g.id}')" style="background:red">Excluir</button>
+                <div class="controls">
+                    <button class="btn-sm" onclick="toggle('${g.id}', ${!g.isOpen})">${g.isOpen ? 'Fechar' : 'Abrir'}</button>
+                    <button class="btn-sm" style="background:#444" onclick="copiar('${g.id}', '${g.inviteToken}')">Link</button>
+                    <button class="btn-sm" style="background:#d32f2f" onclick="deletar('${g.id}')">Excluir</button>
                 </div>
-                <div class="monitor-box" id="mon-${g.id}">Carregando...</div>
             `;
-            list.appendChild(div);
-            setupMon(g.id);
+            lista.appendChild(div);
         });
     });
 
-    window.toggleG = (id, s) => update(ref(db, `groups/${id}`), { isOpen: s });
-    window.resetL = (id) => update(ref(db, `groups/${id}`), { inviteToken: genToken() }).then(() => Swal.fire('Link Redefinido!'));
-    window.delG = (id) => { remove(ref(db, `groups/${id}`)); remove(ref(db, `messages/${id}`)); };
-
-    window.copyL = (id, t) => {
-        let base = window.location.href.substring(0, window.location.href.lastIndexOf('/') + 1);
-        const url = `${base}chat.html?g=${id}&t=${t}`;
-        navigator.clipboard.writeText(url);
-        Swal.fire('Copiado!', url, 'success');
+    window.toggle = (id, status) => update(ref(db, `groups/${id}`), { isOpen: status });
+    window.deletar = (id) => {
+        if(confirm("Apagar grupo e mensagens?")) {
+            remove(ref(db, `groups/${id}`));
+            remove(ref(db, `messages/${id}`));
+        }
     };
-
-    function setupMon(id) {
-        onValue(ref(db, `messages/${id}`), snap => {
-            const m = document.getElementById('mon-'+id); if(!m) return;
-            m.innerHTML = "";
-            snap.forEach(d => { m.innerHTML += `<div><b>${d.val().user}:</b> ${d.val().text.substring(0,20)}</div>`; });
-            m.scrollTop = m.scrollHeight;
-        });
-    }
+    window.copiar = (id, t) => {
+        const url = window.location.href.replace('index.html', 'chat.html') + `?g=${id}&t=${t}`;
+        navigator.clipboard.writeText(url);
+        Swal.fire('Copiado!', 'Link de convite pronto.', 'success');
+    };
 </script>
 </body>
 </html>
