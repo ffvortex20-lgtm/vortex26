@@ -2,32 +2,30 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Vortex Admin - Full Control</title>
+    <title>Vortex Admin - Master</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         :root { --primary: #8a2be2; --bg: #0a0a0a; }
-        body { font-family: sans-serif; background: var(--bg); color: #fff; padding: 20px; }
-        .container { max-width: 600px; margin: 0 auto; background: #16161d; padding: 20px; border-radius: 15px; border: 1px solid #333; }
+        body { font-family: sans-serif; background: var(--bg); color: #fff; padding: 20px; display: flex; justify-content: center; }
+        .container { width: 100%; max-width: 500px; background: #16161d; padding: 20px; border-radius: 15px; border: 1px solid #333; }
         input { width: 100%; padding: 12px; margin: 5px 0; background: #000; border: 1px solid #444; color: #fff; border-radius: 8px; box-sizing: border-box; }
         button { padding: 10px; background: var(--primary); color: #fff; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
         .group-card { background: #000; padding: 15px; border-radius: 10px; margin-top: 15px; border-left: 5px solid var(--primary); }
         .btns { display: flex; gap: 5px; margin-top: 10px; flex-wrap: wrap; }
-        .btn-red { background: #ff4757; } .btn-orange { background: #ffa500; } .btn-blue { background: #1e90ff; }
+        .btn-red { background: #ff4757; } .btn-orange { background: #ffa500; }
     </style>
 </head>
 <body>
-
 <div class="container">
     <h2>👑 Vortex Master Control</h2>
     <div style="background:#000; padding:15px; border-radius:10px;">
         <input type="text" id="name" placeholder="Nome do Grupo">
         <input type="text" id="pic" placeholder="URL da Foto">
-        <button onclick="criar()" style="width:100%">CRIAR NOVO GRUPO</button>
+        <button onclick="criar()" style="width:100%">CRIAR GRUPO</button>
     </div>
-
-    <div id="lista"><h3>Carregando grupos...</h3></div>
+    <div id="lista"></div>
 </div>
 
 <script>
@@ -42,51 +40,40 @@
     function criar() {
         const n = document.getElementById('name').value;
         const p = document.getElementById('pic').value;
-        if(!n || !p) return Swal.fire('Erro','Preencha tudo','error');
+        if(!n || !p) return;
         const id = db.ref('groups').push().key;
-        db.ref('groups/' + id).set({
-            id: id, name: n, pic: p, token: Math.random().toString(36).substring(7), status: "aberto"
-        });
+        const tk = Math.random().toString(36).substring(7);
+        db.ref('groups/' + id).set({ id, name: n, pic: p, token: tk, status: "aberto" });
     }
 
     db.ref('groups').on('value', snap => {
-        const divLista = document.getElementById('lista');
-        divLista.innerHTML = "<h3>📂 Gerenciar Grupos</h3>";
+        const div = document.getElementById('lista');
+        div.innerHTML = "<h3>📂 Grupos Ativos</h3>";
         snap.forEach(child => {
             const g = child.val();
-            divLista.innerHTML += `
+            div.innerHTML += `
                 <div class="group-card">
-                    <img src="${g.pic}" style="width:30px; border-radius:50%"> <b>${g.name}</b> (${g.status})
+                    <b>${g.name}</b> [${g.status}]
                     <div class="btns">
-                        <button onclick="copiar('${g.id}', '${g.token}')">Copiar Link</button>
-                        <button class="btn-blue" onclick="toggle('${g.id}', '${g.status}')">${g.status == 'aberto' ? 'Fechar' : 'Abrir'}</button>
-                        <button class="btn-orange" onclick="limparChat('${g.id}')">Limpar Chat</button>
-                        <button class="btn-red" onclick="deletarG('${g.id}')">Excluir Grupo</button>
-                        <button style="background:#555" onclick="verBanidos('${g.id}')">Banidos</button>
+                        <button onclick="copiarLink('${g.id}', '${g.token}')">Link</button>
+                        <button onclick="toggle('${g.id}', '${g.status}')">${g.status=='aberto'?'Fechar':'Abrir'}</button>
+                        <button class="btn-orange" onclick="limpar('${g.id}')">Limpar</button>
+                        <button class="btn-red" onclick="deletar('${g.id}')">Excluir</button>
                     </div>
                 </div>`;
         });
     });
 
-    window.toggle = (id, s) => db.ref('groups/'+id).update({status: s == 'aberto' ? 'fechado' : 'aberto'});
-    window.limparChat = (id) => confirm("Limpar todas as mensagens?") && db.ref('messages/'+id).remove();
-    window.deletarG = (id) => confirm("Apagar grupo?") && (db.ref('groups/'+id).remove(), db.ref('messages/'+id).remove());
-    
-    window.copiar = (id, t) => {
-        const url = window.location.href.replace('index.html', 'chat.html') + `?g=${id}&t=${t}`;
+    window.toggle = (id, s) => db.ref('groups/'+id).update({status: s=='aberto'?'fechado':'aberto'});
+    window.limpar = (id) => confirm("Limpar chat?") && db.ref('messages/'+id).remove();
+    window.deletar = (id) => confirm("Excluir grupo?") && (db.ref('groups/'+id).remove(), db.ref('messages/'+id).remove());
+
+    window.copiarLink = (id, t) => {
+        let path = window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/') + 1);
+        const url = window.location.origin + path + "chat.html?g=" + id + "&t=" + t;
         navigator.clipboard.writeText(url);
-        Swal.fire('Copiado!', 'Link de convite pronto', 'success');
+        Swal.fire('Copiado!', url, 'success');
     };
-
-    window.verBanidos = (gid) => {
-        db.ref('bans/'+gid).once('value', s => {
-            let lista = "";
-            s.forEach(b => { lista += b.key + " <button onclick='desbanir(\""+gid+"\",\""+b.key+"\")'>X</button><br>"; });
-            Swal.fire({title: 'Usuários Banidos', html: lista || "Ninguém banido"});
-        });
-    };
-
-    window.desbanir = (gid, user) => db.ref('bans/'+gid+'/'+user).remove().then(() => Swal.fire('Desbanido!'));
 </script>
 </body>
 </html>
