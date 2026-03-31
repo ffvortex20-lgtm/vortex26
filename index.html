@@ -3,81 +3,57 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vortex Admin - Elite</title>
+    <title>Vortex Admin - Criador de Grupos</title>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        :root { --primary: #8a2be2; --bg: #0a0a0a; --card: #161616; --text: #eee; }
-        * { box-sizing: border-box; }
-        body { font-family: 'Poppins', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; display: flex; justify-content: center; min-height: 100vh; }
-        
-        .container { width: 100%; max-width: 500px; background: var(--card); padding: 25px; border-radius: 24px; border: 1px solid #333; box-shadow: 0 15px 35px rgba(0,0,0,0.7); height: fit-content; }
-        
-        h1 { color: var(--primary); font-size: 22px; text-align: center; margin-bottom: 20px; text-transform: uppercase; letter-spacing: 2px; }
-        
-        .status-badge { padding: 15px; border-radius: 15px; font-weight: bold; margin-bottom: 20px; text-align: center; font-size: 14px; border: 1px solid #333; }
-        .open { background: rgba(40, 167, 69, 0.1); color: #28a745; border-color: #28a745; }
-        .closed { background: rgba(220, 53, 69, 0.1); color: #dc3545; border-color: #dc3545; }
-
-        .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
-        button { cursor: pointer; border: none; padding: 14px; border-radius: 12px; font-weight: 700; transition: 0.3s; color: white; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 14px; }
-        .btn-open { background: #28a745; }
-        .btn-close { background: #dc3545; }
-        .btn-promo { background: var(--primary); width: 100%; margin-top: 10px; }
-        button:hover { opacity: 0.8; transform: translateY(-2px); }
-
-        .section { background: #000; padding: 18px; border-radius: 18px; margin-bottom: 20px; border: 1px solid #222; }
-        .section h3 { margin: 0 0 12px 0; font-size: 14px; color: #888; display: flex; align-items: center; gap: 8px; }
-        
-        input { background: #111; border: 1px solid #333; color: white; padding: 12px; border-radius: 10px; width: 100%; outline: none; transition: 0.3s; }
-        input:focus { border-color: var(--primary); }
-
-        .link-display { background: #0a0a0a; padding: 12px; border-radius: 10px; font-family: monospace; font-size: 11px; color: var(--primary); word-break: break-all; border: 1px dashed #444; margin-bottom: 10px; text-align: center; }
-
-        .monitor-list { height: 200px; overflow-y: auto; padding-right: 5px; }
-        .msg-card { display: flex; justify-content: space-between; align-items: center; background: #1a1a1a; padding: 10px; border-radius: 10px; margin-bottom: 8px; font-size: 13px; border-left: 3px solid var(--primary); }
-        .del-btn { background: #ff4757; padding: 6px 12px; border-radius: 8px; font-size: 10px; width: auto; }
-        
-        /* Scrollbar Slim */
-        ::-webkit-scrollbar { width: 4px; }
-        ::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
+        :root { --primary: #8a2be2; --bg: #0a0a0a; --card: #161616; }
+        body { font-family: 'Poppins', sans-serif; background: var(--bg); color: #eee; margin: 0; padding: 20px; display: flex; justify-content: center; }
+        .container { width: 100%; max-width: 500px; background: var(--card); padding: 25px; border-radius: 20px; border: 1px solid #333; }
+        h1 { color: var(--primary); font-size: 22px; text-align: center; margin-bottom: 20px; }
+        .section { background: #000; padding: 15px; border-radius: 15px; margin-bottom: 15px; border: 1px solid #222; }
+        h3 { font-size: 14px; color: var(--primary); margin-bottom: 10px; text-transform: uppercase; }
+        input { background: #111; border: 1px solid #333; color: white; padding: 12px; border-radius: 10px; width: 100%; margin-bottom: 10px; outline: none; box-sizing: border-box; }
+        button { cursor: pointer; border: none; padding: 12px; border-radius: 10px; font-weight: bold; color: white; transition: 0.3s; width: 100%; background: var(--primary); }
+        button:active { transform: scale(0.98); }
+        .status { padding: 10px; text-align: center; border-radius: 10px; margin-bottom: 15px; font-weight: bold; border: 1px solid #333; }
+        .online { color: #28a745; background: rgba(40,167,69,0.1); border-color: #28a745; }
+        .offline { color: #dc3545; background: rgba(220,53,69,0.1); border-color: #dc3545; }
     </style>
 </head>
 <body>
-
 <div class="container">
-    <h1><i class="fas fa-crown"></i> Vortex Master</h1>
+    <h1>👑 Vortex Manager</h1>
     
-    <div id="statusBadge" class="status-badge closed">CARREGANDO...</div>
+    <div id="st" class="status">CARREGANDO...</div>
 
-    <div class="btn-grid">
-        <button class="btn-open" id="btnOpen"><i class="fas fa-power-off"></i> ABRIR</button>
-        <button class="btn-close" id="btnClose"><i class="fas fa-times-circle"></i> FECHAR</button>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px;">
+        <button style="background:#28a745" onclick="setChat(true)">ABRIR GRUPO</button>
+        <button style="background:#dc3545" onclick="setChat(false)">FECHAR GRUPO</button>
     </div>
 
     <div class="section">
-        <h3><i class="fas fa-share-alt"></i> LINK DO CHAT</h3>
-        <div class="link-display" id="chatUrlTxt">Gerando...</div>
-        <button onclick="copyChatLink()" style="background: #333; width: 100%; font-size: 12px; padding: 10px;">
-            <i class="fas fa-copy"></i> COPIAR LINK
-        </button>
+        <h3>✨ Configurar Grupo (Exclusivo Admin)</h3>
+        <input type="text" id="gn" placeholder="Nome do Grupo (Ex: Turma do Vortex)">
+        <input type="text" id="gp" placeholder="URL da Foto do Grupo">
+        <button onclick="updateGroup()">CRIAR / ATUALIZAR GRUPO</button>
     </div>
 
     <div class="section">
-        <h3><i class="fas fa-user-shield"></i> PROMOVER USUÁRIO</h3>
-        <input type="text" id="targetUser" placeholder="Nome exato do usuário...">
-        <button class="btn-promo" id="promoBtn">CONCEDER ADMIN 👑</button>
+        <h3>🛡️ Promover Membro</h3>
+        <input type="text" id="admN" placeholder="Nome exato do usuário...">
+        <button style="background:#333" onclick="giveAdmin()">DAR COROA 👑</button>
     </div>
 
-    <div class="section" style="margin-bottom: 0;">
-        <h3><i class="fas fa-eye"></i> MONITORAMENTO</h3>
-        <div class="monitor-list" id="monitor"></div>
+    <div class="section">
+        <h3>🔗 Convite</h3>
+        <button style="background:#444" onclick="copyLink()">COPIAR LINK DO CHAT</button>
     </div>
 </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getDatabase, ref, set, onValue, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyCbLVtiN0JlJ5qjMWyYtwUHEs8NP6DTaPM",
@@ -92,56 +68,33 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    // --- CORREÇÃO DO LINK ---
-    const rawUrl = window.location.href;
-    const cleanUrl = rawUrl.split('?')[0].split('#')[0];
-    const finalChatUrl = cleanUrl.replace('index.html', 'chat.html');
-    document.getElementById('chatUrlTxt').innerText = finalChatUrl;
+    window.setChat = (s) => set(ref(db, 'chatStatus'), s);
 
-    window.copyChatLink = () => {
-        navigator.clipboard.writeText(finalChatUrl);
-        Swal.fire({ title: 'Copiado!', icon: 'success', background: '#161616', color: '#fff', confirmButtonColor: '#8a2be2' });
-    };
-
-    // --- STATUS ---
-    onValue(ref(db, 'chatStatus'), s => {
-        const badge = document.getElementById('statusBadge');
-        const isOpen = s.val();
-        badge.innerText = isOpen ? "SALA ABERTA" : "SALA FECHADA";
-        badge.className = `status-badge ${isOpen ? 'open' : 'closed'}`;
-    });
-
-    document.getElementById('btnOpen').onclick = () => set(ref(db, 'chatStatus'), true);
-    document.getElementById('btnClose').onclick = () => set(ref(db, 'chatStatus'), false);
-
-    // --- PROMOVER ---
-    document.getElementById('promoBtn').onclick = () => {
-        const user = document.getElementById('targetUser').value.trim();
-        if(user) {
-            set(ref(db, 'admins/' + user.toLowerCase()), true);
-            Swal.fire({ title: 'Promovido!', text: `${user} agora é Admin`, icon: 'success', background: '#161616', color: '#fff' });
-            document.getElementById('targetUser').value = "";
+    window.updateGroup = () => {
+        const name = document.getElementById('gn').value;
+        const pic = document.getElementById('gp').value;
+        if(name && pic) {
+            set(ref(db, 'groupConfig'), { name, pic })
+            .then(() => Swal.fire('Grupo Criado!', '', 'success'));
         }
     };
 
-    // --- MONITOR ---
-    onValue(ref(db, 'messages'), (snap) => {
-        const list = document.getElementById('monitor');
-        list.innerHTML = "";
-        snap.forEach(c => {
-            const m = c.val();
-            const prev = m.type === 'audio' ? '🎤 Áudio' : m.text;
-            const card = document.createElement('div');
-            card.className = 'msg-card';
-            card.innerHTML = `
-                <span><b>${m.user}:</b> ${prev.substring(0,18)}...</span>
-                <button class="del-btn" onclick="deleteMsg('${c.key}')">Apagar</button>
-            `;
-            list.appendChild(card);
-        });
-    });
+    window.giveAdmin = () => {
+        const user = document.getElementById('admN').value.trim();
+        if(user) set(ref(db, 'admins/' + user.toLowerCase()), true).then(() => Swal.fire('Admin Adicionado!'));
+    };
 
-    window.deleteMsg = (id) => remove(ref(db, 'messages/' + id));
+    window.copyLink = () => {
+        const url = window.location.href.replace('index.html', 'chat.html');
+        navigator.clipboard.writeText(url);
+        Swal.fire('Link Copiado!');
+    };
+
+    onValue(ref(db, 'chatStatus'), s => {
+        const el = document.getElementById('st');
+        el.innerText = s.val() ? "GRUPO ATIVO" : "GRUPO DESATIVADO";
+        el.className = `status ${s.val() ? 'online' : 'offline'}`;
+    });
 </script>
 </body>
 </html>
