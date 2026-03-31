@@ -5,141 +5,119 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Vortex Chat</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         :root { --primary: #8a2be2; --bg: #0b0b0e; --panel: #16161d; }
-        body { background: var(--bg); color: #fff; font-family: sans-serif; margin: 0; display: flex; justify-content: center; height: 100vh; overflow: hidden; }
-        #app { width: 100%; max-width: 500px; background: var(--panel); position: relative; display: flex; flex-direction: column; }
+        body { background: var(--bg); color: #fff; font-family: sans-serif; margin: 0; height: 100vh; overflow: hidden; }
+        #app { width: 100%; max-width: 500px; height: 100%; margin: 0 auto; background: var(--panel); display: flex; flex-direction: column; }
         
-        /* Login Overlay */
-        #login-screen { position: absolute; inset: 0; background: #0b0b0e; z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 20px; }
-        .login-box { background: #16161d; padding: 30px; border-radius: 20px; border: 1px solid #333; width: 100%; text-align: center; }
-
-        /* Estilo Lista */
+        /* Lista Estilo WhatsApp */
         .wp-item { display: flex; align-items: center; padding: 15px; border-bottom: 1px solid #222; cursor: pointer; }
         .wp-item img { width: 50px; height: 50px; border-radius: 50%; margin-right: 15px; object-fit: cover; border: 2px solid var(--primary); }
+        .wp-info b { display: block; font-size: 16px; }
+        .wp-info span { font-size: 12px; color: #888; }
 
-        /* Chat */
-        #chat-window { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 10px; background: #050505; }
-        .msg { padding: 10px; border-radius: 15px; max-width: 80%; font-size: 14px; background: #20202b; align-self: flex-start; }
-        .owner { background: #2d1b4d; align-self: flex-end; border: 1px solid var(--primary); }
+        #chat-window { flex: 1; overflow-y: auto; padding: 15px; background: #050505; display: flex; flex-direction: column; gap: 10px; }
+        .msg { padding: 10px; border-radius: 12px; max-width: 80%; font-size: 14px; background: #20202b; position: relative; }
+        .owner { align-self: flex-end; background: #2d1b4d; border: 1px solid var(--primary); }
         
-        .header { background: #1f1f29; padding: 10px; display: flex; align-items: center; gap: 10px; }
-        .input-area { background: #1f1f29; padding: 10px; display: flex; gap: 10px; }
+        .header { background: #1f1f29; padding: 12px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid #333; }
+        .input-area { background: #1f1f29; padding: 12px; display: flex; gap: 10px; }
         input { flex: 1; background: #2c2c3a; border: none; color: #fff; padding: 12px; border-radius: 20px; outline: none; }
-        audio { filter: invert(1); height: 35px; width: 100%; }
         .hidden { display: none !important; }
     </style>
 </head>
 <body>
-
 <div id="app">
-    <div id="login-screen" class="hidden">
-        <div class="login-box">
-            <h2 style="color:var(--primary)">Vortex Chat</h2>
-            <input type="text" id="nick" placeholder="Escolha seu nome único..." style="width:100%; box-sizing:border-box; margin-bottom:15px;">
-            <button onclick="entrar()" style="width:100%; background:var(--primary); color:white; border:none; padding:15px; border-radius:10px; font-weight:bold;">ENTRAR</button>
-        </div>
+    <div id="lista-screen">
+        <div style="padding: 20px; font-size: 20px; font-weight: bold; border-bottom: 1px solid #333;">Vortex Chat</div>
+        <div id="container-grupos"></div>
     </div>
 
-    <div id="list-screen">
-        <div style="padding:20px; font-size:20px; font-weight:bold; border-bottom:1px solid #333;">Meus Grupos</div>
-        <div id="groups-list"></div>
-    </div>
-
-    <div id="chat-screen" class="hidden" style="height:100%; display:flex; flex-direction:column;">
+    <div id="chat-screen" class="hidden" style="height: 100%; display: flex; flex-direction: column;">
         <div class="header">
-            <button onclick="location.href='chat.html'" style="background:none; border:none; color:white;"><i class="fas fa-arrow-left"></i></button>
-            <img id="h-pic" src="">
-            <b id="h-name">...</b>
+            <button onclick="location.href='chat.html'" style="background:none; border:none; color:white; cursor:pointer;"><i class="fas fa-arrow-left"></i></button>
+            <img id="h-img" src="" style="width:40px; height:40px; border-radius:50%;">
+            <b id="h-name">Carregando...</b>
         </div>
         <div id="chat-window"></div>
         <div class="input-area" id="ctrls">
-            <input type="text" id="msgI" placeholder="Mensagem">
-            <button id="recBtn" style="background:none; border:none; color:#888; font-size:20px;"><i class="fas fa-microphone"></i></button>
-            <button onclick="sendT()" style="background:var(--primary); border:none; color:white; width:40px; height:40px; border-radius:50%;"><i class="fas fa-paper-plane"></i></button>
+            <input type="text" id="msgIn" placeholder="Digite uma mensagem...">
+            <button onclick="enviar()" style="background:var(--primary); border:none; color:#fff; width:40px; height:40px; border-radius:50%; cursor:pointer;"><i class="fas fa-paper-plane"></i></button>
         </div>
     </div>
 </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getDatabase, ref, onValue, push, get, set, child } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    import { getDatabase, ref, onValue, push, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-    const firebaseConfig = { /* SUAS CONFIGS AQUI */ };
+    const firebaseConfig = { /* AS MESMAS CONFIGS DO ADMIN */ };
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    const params = new URLSearchParams(window.location.search);
-    const gid = params.get('g'), token = params.get('t');
-    const myName = localStorage.getItem('vortex_u');
+    const urlParams = new URLSearchParams(window.location.search);
+    const gid = urlParams.get('g');
+    const token = urlParams.get('t');
+    const user = "Membro_" + Math.floor(Math.random()*999);
 
-    // Login
-    window.entrar = async () => {
-        const n = document.getElementById('nick').value.trim();
-        if(!n) return;
-        const s = await get(child(ref(db), `users/${n.toLowerCase()}`));
-        if(s.exists()) return Swal.fire('Nome em uso!');
-        await set(ref(db, `users/${n.toLowerCase()}`), true);
-        localStorage.setItem('vortex_u', n); location.reload();
-    };
+    if (!gid) {
+        // Carrega a Lista de Grupos
+        onValue(ref(db, 'groups'), snap => {
+            const container = document.getElementById('container-grupos');
+            container.innerHTML = "";
+            snap.forEach(c => {
+                const g = c.val();
+                const item = document.createElement('div');
+                item.className = 'wp-item';
+                item.onclick = () => location.href = `chat.html?g=${g.id}&t=${g.inviteToken}`;
+                item.innerHTML = `
+                    <img src="${g.pic}">
+                    <div class="wp-info">
+                        <b>${g.name}</b>
+                        <span>${g.isOpen ? 'Toque para entrar' : '🔒 Grupo Fechado'}</span>
+                    </div>
+                `;
+                container.appendChild(item);
+            });
+        });
+    } else {
+        // Entra no Chat Específico
+        document.getElementById('lista-screen').classList.add('hidden');
+        document.getElementById('chat-screen').classList.remove('hidden');
 
-    if(!myName) document.getElementById('login-screen').classList.remove('hidden');
-    else {
-        if(!gid) {
-            onValue(ref(db, 'groups'), snap => {
-                const l = document.getElementById('groups-list'); l.innerHTML = "";
-                snap.forEach(c => {
-                    const g = c.val();
-                    l.innerHTML += `<div class="wp-item" onclick="location.href='chat.html?g=${g.id}&t=${g.inviteToken}'"><img src="${g.pic}"><b>${g.name}</b></div>`;
-                });
+        onValue(ref(db, `groups/${gid}`), snap => {
+            const g = snap.val();
+            if(!g || g.inviteToken !== token) return location.href='chat.html';
+            document.getElementById('h-name').innerText = g.name;
+            document.getElementById('h-img').src = g.pic;
+            document.getElementById('ctrls').style.display = g.isOpen ? 'flex' : 'none';
+        });
+
+        onValue(ref(db, `messages/${gid}`), snap => {
+            const win = document.getElementById('chat-window');
+            win.innerHTML = "";
+            snap.forEach(c => {
+                const m = c.val();
+                const div = document.createElement('div');
+                div.className = `msg ${m.user === user ? 'owner' : ''}`;
+                div.innerHTML = `<small style="color:var(--primary)">${m.user}</small><br>${m.text}`;
+                win.appendChild(div);
             });
-        } else {
-            document.getElementById('list-screen').classList.add('hidden');
-            document.getElementById('chat-screen').classList.remove('hidden');
-            onValue(ref(db, `groups/${gid}`), snap => {
-                const g = snap.val();
-                if(!g || g.inviteToken !== token) return location.href='chat.html';
-                document.getElementById('h-name').innerText = g.name;
-                document.getElementById('h-pic').src = g.pic;
-                document.getElementById('ctrls').style.display = g.isOpen ? 'flex' : 'none';
-            });
-            onValue(ref(db, `messages/${gid}`), snap => {
-                const w = document.getElementById('chat-window'); w.innerHTML = "";
-                snap.forEach(c => {
-                    const m = c.val();
-                    const div = document.createElement('div');
-                    div.className = `msg ${m.user === myName ? 'owner' : ''}`;
-                    let html = m.text;
-                    if(m.type === 'audio') html = `<audio src="${m.text}" controls></audio>`;
-                    div.innerHTML = `<b style="font-size:10px; color:var(--primary)">${m.user}</b><br>${html}`;
-                    w.appendChild(div);
-                });
-                w.scrollTop = w.scrollHeight;
-            });
-        }
+            win.scrollTop = win.scrollHeight;
+        });
     }
 
-    function send(t, type='text') { push(ref(db, `messages/${gid}`), { user: myName, text: t, type }); }
-    window.sendT = () => { const i = document.getElementById('msgI'); if(i.value){ send(i.value); i.value=""; }};
-
-    // Áudio Base64
-    let recorder;
-    const rb = document.getElementById('recBtn');
-    rb.onpointerdown = async () => {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        recorder = new MediaRecorder(stream);
-        let chunks = [];
-        recorder.ondataavailable = e => chunks.push(e.data);
-        recorder.onstop = () => {
-            const reader = new FileReader();
-            reader.readAsDataURL(new Blob(chunks));
-            reader.onloadend = () => send(reader.result, 'audio');
-            stream.getTracks().forEach(t => t.stop());
-        };
-        recorder.start(); rb.style.color = "red";
+    window.enviar = () => {
+        const input = document.getElementById('msgIn');
+        if(input.value) {
+            push(ref(db, `messages/${gid}`), {
+                user: user,
+                text: input.value,
+                timestamp: serverTimestamp()
+            });
+            input.value = "";
+        }
     };
-    rb.onpointerup = () => { if(recorder){ recorder.stop(); rb.style.color = "#888"; }};
 </script>
 </body>
 </html>
