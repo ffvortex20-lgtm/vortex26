@@ -3,109 +3,94 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vortex Master - Admin</title>
+    <title>Vortex Admin - Sistema Antigo</title>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        :root { --primary: #8a2be2; --bg: #0a0a0a; --card: #16161d; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: #fff; margin: 0; padding: 20px; display: flex; justify-content: center; }
-        .container { width: 100%; max-width: 500px; background: var(--card); padding: 25px; border-radius: 20px; border: 1px solid #333; }
-        .box { background: #000; padding: 15px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #222; }
-        input { width: 100%; padding: 12px; margin-bottom: 10px; border-radius: 8px; border: 1px solid #333; background: #111; color: #fff; box-sizing: border-box; }
-        button { width: 100%; padding: 12px; border-radius: 8px; border: none; background: var(--primary); color: #fff; font-weight: bold; cursor: pointer; }
-        .group-card { background: #1a1a24; padding: 15px; border-radius: 10px; margin-top: 10px; border-left: 4px solid var(--primary); }
-        .controls { display: flex; gap: 5px; margin-top: 10px; flex-wrap: wrap; }
-        .btn-sm { padding: 8px; font-size: 12px; flex: 1; }
+        :root { --primary: #8a2be2; --bg: #0a0a0a; }
+        body { font-family: sans-serif; background: var(--bg); color: #fff; padding: 20px; display: flex; justify-content: center; }
+        .container { width: 100%; max-width: 450px; background: #16161d; padding: 20px; border-radius: 15px; border: 1px solid #333; }
+        input { width: 100%; padding: 12px; margin: 5px 0; background: #000; border: 1px solid #444; color: #fff; border-radius: 8px; box-sizing: border-box; }
+        button { width: 100%; padding: 12px; background: var(--primary); color: #fff; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; margin-top: 10px; }
+        .group-card { background: #000; padding: 15px; border-radius: 10px; margin-top: 15px; border-left: 5px solid var(--primary); }
+        .btns { display: flex; gap: 5px; margin-top: 10px; }
+        .btn-del { background: #ff4757; }
     </style>
 </head>
 <body>
+
 <div class="container">
-    <h2>👑 Vortex Master</h2>
-    <div class="box">
-        <h3>➕ Novo Grupo</h3>
-        <input type="text" id="gName" placeholder="Nome do Grupo">
-        <input type="text" id="gPic" placeholder="Link da Foto (URL)">
-        <button onclick="criarGrupo()">CRIAR GRUPO</button>
+    <h2>👑 Vortex Admin</h2>
+    <div style="background:#000; padding:15px; border-radius:10px;">
+        <input type="text" id="name" placeholder="Nome do Grupo">
+        <input type="text" id="pic" placeholder="URL da Foto">
+        <button onclick="criar()">CRIAR GRUPO</button>
     </div>
 
-    <div id="listaGrupos">
-        <h3>📂 Meus Grupos</h3>
-        <p id="loading">Sincronizando com Firebase...</p>
+    <div id="lista">
+        <h3 style="margin-top:20px;">📂 Meus Grupos</h3>
     </div>
 </div>
 
-<script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getDatabase, ref, set, push, onValue, remove, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-
-    // SUBSTITUA PELAS SUAS CONFIGS DO FIREBASE
+<script>
+    // CONFIGURAÇÃO DO SEU FIREBASE
     const firebaseConfig = {
-        apiKey: "AIzaSy...",
-        databaseURL: "https://seu-projeto.firebaseio.com",
-        projectId: "seu-projeto",
-        appId: "1:..."
+        apiKey: "AIzaSyCbLVtiN0JlJ5qjMWyYtwUHEs8NP6DTaPM",
+        databaseURL: "https://chat-4b3e3-default-rtdb.firebaseio.com",
+        projectId: "chat-4b3e3",
     };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
 
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
+    function criar() {
+        const n = document.getElementById('name').value;
+        const p = document.getElementById('pic').value;
+        if(!n || !p) return;
 
-    const gerarToken = () => Math.random().toString(36).substring(2, 10);
+        const id = db.ref('groups').push().key;
+        const token = Math.random().toString(36).substring(7);
 
-    window.criarGrupo = () => {
-        const name = document.getElementById('gName').value;
-        const pic = document.getElementById('gPic').value;
-        if(!name || !pic) return Swal.fire('Erro', 'Preencha nome e foto', 'error');
-
-        const novoRef = push(ref(db, 'groups'));
-        set(novoRef, {
-            id: novoRef.key,
-            name: name,
-            pic: pic,
-            isOpen: true,
-            inviteToken: gerarToken()
-        }).then(() => {
-            Swal.fire('Sucesso', 'Grupo criado!', 'success');
-            document.getElementById('gName').value = "";
-            document.getElementById('gPic').value = "";
+        db.ref('groups/' + id).set({
+            id: id,
+            name: n,
+            pic: p,
+            token: token,
+            status: "aberto"
         });
-    };
+        document.getElementById('name').value = "";
+        document.getElementById('pic').value = "";
+    }
 
-    onValue(ref(db, 'groups'), (snap) => {
-        const lista = document.getElementById('listaGrupos');
-        lista.innerHTML = "<h3>📂 Meus Grupos</h3>";
-        if(!snap.exists()) lista.innerHTML += "<p>Nenhum grupo ativo.</p>";
-        
-        snap.forEach((child) => {
+    db.ref('groups').on('value', snap => {
+        const divLista = document.getElementById('lista');
+        divLista.innerHTML = "<h3>📂 Meus Grupos</h3>";
+        snap.forEach(child => {
             const g = child.val();
-            const div = document.createElement('div');
-            div.className = 'group-card';
-            div.innerHTML = `
-                <div style="display:flex; align-items:center; gap:10px;">
-                    <img src="${g.pic}" style="width:40px; height:40px; border-radius:50%; object-fit:cover;">
-                    <b>${g.name}</b>
-                </div>
-                <div class="controls">
-                    <button class="btn-sm" onclick="toggle('${g.id}', ${!g.isOpen})">${g.isOpen ? 'Fechar' : 'Abrir'}</button>
-                    <button class="btn-sm" style="background:#444" onclick="copiar('${g.id}', '${g.inviteToken}')">Link</button>
-                    <button class="btn-sm" style="background:#d32f2f" onclick="deletar('${g.id}')">Excluir</button>
+            divLista.innerHTML += `
+                <div class="group-card">
+                    <b>${g.name}</b><br>
+                    <div class="btns">
+                        <button onclick="copiar('${g.id}', '${g.token}')">Copiar Link</button>
+                        <button class="btn-del" onclick="deletar('${g.id}')">Excluir</button>
+                    </div>
                 </div>
             `;
-            lista.appendChild(div);
         });
     });
 
-    window.toggle = (id, status) => update(ref(db, `groups/${id}`), { isOpen: status });
-    window.deletar = (id) => {
-        if(confirm("Apagar grupo e mensagens?")) {
-            remove(ref(db, `groups/${id}`));
-            remove(ref(db, `messages/${id}`));
+    function deletar(id) {
+        if(confirm("Apagar tudo?")) {
+            db.ref('groups/' + id).remove();
+            db.ref('messages/' + id).remove();
         }
-    };
-    window.copiar = (id, t) => {
+    }
+
+    function copiar(id, t) {
         const url = window.location.href.replace('index.html', 'chat.html') + `?g=${id}&t=${t}`;
         navigator.clipboard.writeText(url);
-        Swal.fire('Copiado!', 'Link de convite pronto.', 'success');
-    };
+        alert("Link Copiado!");
+    }
 </script>
 </body>
 </html>
