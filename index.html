@@ -38,7 +38,6 @@
         .msg-card { display: flex; justify-content: space-between; align-items: center; background: #1a1a1a; padding: 10px; border-radius: 10px; margin-bottom: 8px; font-size: 13px; border-left: 3px solid var(--primary); }
         .del-btn { background: #ff4757; padding: 6px 12px; border-radius: 8px; font-size: 10px; width: auto; }
         
-        /* Scrollbar Slim */
         ::-webkit-scrollbar { width: 4px; }
         ::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
     </style>
@@ -92,10 +91,16 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    // --- CORREÇÃO DO LINK ---
-    const rawUrl = window.location.href;
-    const cleanUrl = rawUrl.split('?')[0].split('#')[0];
-    const finalChatUrl = cleanUrl.replace('index.html', 'chat.html');
+    // --- LÓGICA DE LINK CORRIGIDA ---
+    const currentUrl = window.location.href.split('?')[0].split('#')[0];
+    let finalChatUrl;
+
+    if (currentUrl.includes('index.html')) {
+        finalChatUrl = currentUrl.replace('index.html', 'chat.html');
+    } else {
+        finalChatUrl = currentUrl.endsWith('/') ? currentUrl + 'chat.html' : currentUrl + '/chat.html';
+    }
+
     document.getElementById('chatUrlTxt').innerText = finalChatUrl;
 
     window.copyChatLink = () => {
@@ -130,7 +135,7 @@
         list.innerHTML = "";
         snap.forEach(c => {
             const m = c.val();
-            const prev = m.type === 'audio' ? '🎤 Áudio' : m.text;
+            const prev = m.type === 'audio' ? '🎤 Áudio' : (m.text || "");
             const card = document.createElement('div');
             card.className = 'msg-card';
             card.innerHTML = `
