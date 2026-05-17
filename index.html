@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>K7 Modder | Painel de Acesso</title>
-    <!-- Google Fonts & Tailwind CSS para um visual Premium -->
+    <!-- Google Fonts & Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -31,10 +31,10 @@
     <!-- Header / Navbar -->
     <header class="w-full max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
         <div class="flex items-center gap-3">
-            <img id="admin-logo" src="" alt="Logo" class="w-10 h-10 rounded-xl border border-indigo-500/30 object-cover shadow-lg hidden">
+            <img id="admin-logo" src="https://i.pinimg.com/1200x/91/fc/1a/91fc1aa3b38199b803f3e6ae505332fd.jpg" alt="Logo" class="w-10 h-10 rounded-xl border border-indigo-500/30 object-cover shadow-lg">
             <div>
                 <h1 class="text-xl font-bold tracking-tight bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent">K7 Modder</h1>
-                <p id="admin-name" class="text-xs text-indigo-400 font-medium tracking-wider uppercase"></p>
+                <p class="text-xs text-red-500 font-bold tracking-wider uppercase animate-pulse">Cracked by K7</p>
             </div>
         </div>
         <div class="flex items-center gap-2 text-xs bg-slate-800/60 px-3 py-1.5 rounded-full border border-slate-700/50">
@@ -45,23 +45,38 @@
 
     <!-- Main Content -->
     <main class="flex-grow flex items-center justify-center px-4 py-8">
-        <div class="w-full max-w-md glass-card rounded-3xl p-8 shadow-2xl glow-effect transition-all duration-300">
+        <div class="w-full max-w-md glass-card rounded-3xl p-8 shadow-2xl glow-effect">
             
             <!-- Icon/Status -->
             <div class="text-center mb-6">
                 <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-indigo-600/10 border border-indigo-500/20 text-indigo-400 text-2xl mb-4">
-                    <i class="fa-solid fa-shield-halved"></i>
+                    <i class="fa-solid fa-unlock-keyhole"></i>
                 </div>
                 <h2 class="text-2xl font-bold text-white tracking-tight">Gerador de Acesso</h2>
-                <p class="text-sm text-slate-400 mt-1">Gere chaves oficiais e seguras abaixo</p>
+                <p class="text-sm text-slate-400 mt-1">Siga as etapas abaixo para liberar sua chave</p>
             </div>
 
-            <!-- Formulário Dinâmico -->
-            <form id="system-form" class="space-y-5">
+            <!-- PASSO 1: TRAVA DO WHATSAPP -->
+            <div id="step-unlock" class="space-y-4 mb-6 bg-slate-900/50 border border-amber-500/20 p-4 rounded-2xl">
+                <div class="flex items-start gap-3">
+                    <div class="text-amber-400 mt-0.5"><i class="fa-solid fa-circle-exclamation text-lg"></i></div>
+                    <div>
+                        <h4 class="text-sm font-semibold text-white">Inscrição Obrigatória</h4>
+                        <p class="text-xs text-slate-400 mt-0.5">Entre no nosso canal oficial do WhatsApp para desbloquear o gerador do sistema.</p>
+                    </div>
+                </div>
+                <a href="https://whatsapp.com/channel/0029VbC7FWcJENxsIOsndS15" target="_blank" id="btn-whatsapp" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs py-3 px-4 rounded-xl shadow-lg shadow-emerald-900/20 transition-all flex items-center justify-center gap-2">
+                    <i class="fa-brands fa-whatsapp text-lg"></i>
+                    <span>ENTRAR NO CANAL DO ZAP</span>
+                </a>
+            </div>
+
+            <!-- Formulário Dinâmico (Fica semi-transparente até ser liberado) -->
+            <form id="system-form" class="space-y-5 opacity-40 pointer-events-none transition-all duration-300">
                 <div>
                     <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Servidor Selecionado</label>
                     <div class="relative">
-                        <select id="server-select" class="w-full bg-slate-900/80 border border-slate-700/60 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-indigo-500 transition-colors appearance-none cursor-pointer">
+                        <select id="server-select" class="w-full bg-slate-900/80 border border-slate-700/60 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-indigo-500 appearance-none">
                             <!-- Injetado dinamicamente -->
                         </select>
                         <div class="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none text-slate-400 text-xs">
@@ -73,11 +88,11 @@
                 <div>
                     <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Tempo de Validade</label>
                     <div class="grid grid-cols-3 gap-2" id="hours-container">
-                        <!-- Botões de horas injetados dinamicamente via JS -->
+                        <!-- Injetado via JS -->
                     </div>
                 </div>
 
-                <button type="submit" id="btn-generate" class="w-full bg-gradient-to-r from-indigo-500 to-violet-600 hover:from-indigo-600 hover:to-violet-700 text-white font-semibold text-sm py-3.5 px-4 rounded-xl shadow-lg shadow-indigo-600/20 active:scale-[0.99] transition-all flex items-center justify-center gap-2 mt-2">
+                <button type="submit" id="btn-generate" class="w-full bg-gradient-to-r from-indigo-500 to-violet-600 hover:from-indigo-600 hover:to-violet-700 text-white font-semibold text-sm py-3.5 px-4 rounded-xl shadow-lg shadow-indigo-600/20 transition-all flex items-center justify-center gap-2 mt-2">
                     <i class="fa-solid fa-wand-magic-sparkles"></i>
                     <span>Gerar Credencial</span>
                 </button>
@@ -101,20 +116,18 @@
 
     <!-- Footer -->
     <footer class="w-full text-center py-6 text-xs text-slate-500 border-t border-slate-900/60 bg-slate-950/20">
-        <p>&copy; 2026 <span class="text-indigo-400 font-medium">K7 Modder</span>. Todos os direitos reservados.</p>
+        <p>&copy; 2026 <span class="text-indigo-400 font-medium">K7 Modder</span> — Cracked by K7</p>
     </footer>
 
-    <!-- Scripts de Configuração e Core do Sistema -->
     <script>
-        // Configurações extraídas do seu View Resource original
         window.APP_CONFIG = {
             backendUrl: 'https://viku.mypdftools.site',
             apiKey: 'X7B4N2P8Q9W3Z6M5',
             currentSlug: 'valimods1',
             defaultServer: '1',
             defaultKeyHours: '6',
-            adminName: 'VALI MODS',
-            adminLogo: 'https://viku.mypdftools.site/uploads/valimods1/IMG_20260408_154428_252.jpg',
+            adminName: 'K7 MODDER',
+            adminLogo: 'https://i.pinimg.com/1200x/91/fc/1a/91fc1aa3b38199b803f3e6ae505332fd.jpg',
         };
         window._UI_DATA = "KogCKogCKogCKogCgQBXD5UBWogCKogCKogCKogCKogCKoAIUw1QOVgFKogCKogCKogCKogCKogCKogCKoAIUQ0SalVBW42b49XavlnCdiuCu92YsNGevxnCdiuCu9mf6NHepR2bUgASfl1BY9kXFVETH4lRftEXIcRWZtkRJpARLpVWWogCKogCKogCKogCKogCKogCKogCKogCKACFEtkWZVgFs2LyKEhWZhERMogGE4BXK4nZ/tGfKQ2buZWZtpQEalFSExgCs2LyUgwTENkRHg1TeVURMdgXG91SchwFZl1SGlkCEtkWZZhCKogCKogCKogCKogCKogCKogCKogCKoAIUgAWP5VRFx0BeZ0XLxFCXkVWLZUSKw1QOZhCKogCKogCKogCKogCKogCKogCKACIUw1QOVgFKogCKogCKogCKogCKogCKogCKoAIUw1QOVgFKogCKogCKogCKogCKogCKogCKogCKogCgQBRF5lXfhUBWogCKogCKogCKogCKogCKogCKogCKogCKogCKoAI+p3Yvl2b4pwb8tWeKogCKogCKogCKogCKogCKogCKogCKogCKogCKogCKoAIU0EXZVgFUUACfsBCXgxUKgwHbgwFYIlCI8xGIcxGTpACTgwFbIlCPR0QGZBFFgAGbgwFYMlCIgxGIcBGSpACSsBCXsxUKgAGbgwFbIlCPR0QGZBFFggEKoBGKIhCeshCYogHbgwFZ5FRDVkWK8ERDZ0UGVkWWQRBIAlE8hxBYogGKohCaoAGKgxSYshQYoAGKohCaogGKghCYsEHbwFGKgxBaogGKohCYoAGLxhYYogHbcGCX4kCC51SaZBFIgBCXIkXONUXH8UQFhlXZpACYVkRFlmXE9EWY9VSIcxTBVEWellCI8ERFRECXYkRDxkCI4BGK4BGKohCagwFSVEad90QcpACfsBCX4lQNN0TCpACfsBCXIkXONUXK0EXZZhCKogCKogCKogCKogCKogCKogCKogCKogCKogCKogCKACFI8ERDZkXfVkCE5FSHcUWH4lRftEXIcRWZtkRJpACE5FaM5kePx1SZhwFONkCEVkXe9FSWogCKogCKogCKogCKogCKogCKogCKogCKogCKoAIUQURe51XIVgFKogCKogCKogCKogCKogCKogCKogCKogCKogCKAycvFmCzpXZppgCKogCKogCKogCKogCKogCKogCKogCKogCKogCKogCgQRTclVBWQRBIsBXYoAGKshCaogGKghCYs0EChxBYowGKohCaoAGKgxSewHGHgxBbogGKohCYoAGL5hYfshCfcGCX4kCC51SaZBFFgAGIchUYpACZsBCX4lQNN0TCpACZsBCXIkXONUXKgwEIcxUKgwEIchUK4VSPhlFUgAGIchQe50QddwTBVEWellCIgVRGVUaeR0TYh1XJhwFPFURY5VWKgwTEVERIchRGNETKggHYogHYogGKoBCXIVRo11TDxlCI8xGIchXC10QPJkCI8xGIchQe50QdpQTcllFKogCKogCKogCKogCKogCKogCKogCKogCKogCKogCKoAIUgAReh0BHl1BeZ0XLxFCXkVWLZUSKgAReh2UaVUSIchTDpARF5lXfhkFKogCKogCKogCKogCKogCKogCKogCKogCKogCKACFI0VRYdARFNkXJt0BeZ0XLxFCXkVWLZUSKw1QOZhCKogCKogCKogCKogCKogCKogCKogCKoAIUw1QOVgFKogCKogCKogCKogCKogCKogCKogCKogCgkHe/VmYKwhCkNmC59GejpncvpwcvFmCZWKyKogCKogCKogCKogCKogCKogCKogCKogCKogCKACFI8USD5VREdwUYNkWS90BeZ0XLxFCXkVWLZUSKw1QOZhCKogCKogCKogCKogCKogCKogCKogCKoAIUw1QOVgFKogCKogCKogCKogCKogCKogCKogCKogCgQBXD5UBWQBCeJ1TedwUPF0BeZ0XLxFCXkVWLZUSKgwTOVUaOV0RIchTDpAXD5kFKogCKogCKogCKogCKogCKogCKogCKogCKogCKACFcNkTFYBFIg1THd0QCl1BT9UQIcRWZtkRJpAXD5kFKogCKogCKogCKogCKogCKogCKogCKogCKogCKACFIIVRIN1TBdgXG91SchwFZl1SGlkCcNkTWogCKogCKogCKogCKogCKogCKogCKogCKACFcNkTFYxcvFmC+Z2frxnC49XZzRBCG9ESLZ0BeZ0XZ9EWH4lRftEXIcRWZtkRJpAXD5kFKogCKogCKogCKogCKogCKogCKogCKogCgQBCE9kTONkQK4lRfl1TYdgXG91SchwFZl1SGlkCIQURD5VSPl1BeZ0XZ9EWIchTDpAXD5kFKogCKogCKogCKogCKogCKogCKoAIgQBXD5UBWogCKogCKogCKogCKogCKogCKogCgQBRF5lXfhUBWogCKogCKogCKogCKogCKogCKogCKogCKAif6NHep9mbKwgCzx2Y49GfKogCKogCKogCKogCKogCKogCKogCKogCKogCKACFNxVWFYBFFgAGbogHK0xGKMhCcogGYgwFZ5FRDVkWK8ERDZ0UGVkWWQBCYgwFC5lTD11BPFURY5VWKgAWFZURp5FRPhFWflECX8UQFhlXZpACPRUREhwFGZ0QMpACeghCeghCaogGIchUFhWXPNEXKggEbgwFeJUTD9kQKggEbgwFC5lTD1lCNxVWWogCKogCKogCKogCKogCKogCKogCKogCKogCKoAIUgARP5kTDJkCTh1SORURJ9UWKQkXIdgXG91SchwFZl1SGlkCIQkXoNFTDh1TchwFONkCEVkXe9FSWogCKogCKogCKogCKogCKogCKogCKogCKACIUQURe51XIVgFKogCKogCKogCKogCKogCKogCKogCKogCgkXevlWarpQYpVmZk9nCKogCKogCKogCKogCKogCKogCKogCKogCKogCgQRTclVBWQRBI4hCTshZfQQGK8BBZcwRZcQGHYUHKgBGmlhCZYkGKoxRfQQHK8BBfshZaogGHBVHd0BBdcQHd0BBdowGKohCaowHE8hCfQwHKIRHdQQHKIRHdQQHHshCbogGK8BBfowHE8xSbwBBdowGcQQHHcEGKgxBGhhCbgxZIchTKIkXLplFUgAGIchQe50QddwTBVEWellCIgVRGVUaeR0TYh1XJhwFPFURY5VWKgwTEVERIchRGNETKggHYogHYogGKoBCXIVRo11TDxlCIIxGIchXC10QPJkCIIxGIchQe50QdpQTcllFKogCKogCKogCKogCKogCKogCKogCKogCKogCKACFIQ0TO50QCpwUYt0RDhlWKQkXIdgXG91SchwFZl1SGlkCIQkXoN1Th51TNhwFONkCEVkXe9FSWogCKogCKogCKogCKogCKogCKogCKogCKACIUw1QOVgFUgQEPRUREBxULZkWZNkTIcxTGNlXZpACZ9lXL5VWH4lRftEXIcRWZtkRJpACNl1ZZ9lXL5VWIchTDpAXD5kFKogCKogCKogCKogCKogCKogCKogCKogCgQBXD5UBWogCKogCKogCKogCKogCKogCKogCKogCKACFcNkTFYBr9iMFI8EWFl0BY9ERENkWZdgXG91SchwFZl1SGlkCcNkTWogCKogCKogCKogCKogCKogCKogCKogCKogCKoAIUw1QOVgFUgAGYpQTENEWHg1TER0Qal1BeZ0XLxFCXkVWLZUSKw1QOZhCKogCKogCKogCKogCKogCKogCKogCKogCKogCgQBXD5UBWQBCNR0QYdAWPRERDpVWH4lRftEXIcRWZtkRJpAXD5kFKogCKogCKogCKogCKogCKogCKogCKogCKogCKACFIExTEVERQM1SGpVWD5ECX8kRT5VWKgAWP50SFZ0BeZ0XLxFCXkVWLZUSKgAWPRERDpVeY9kTLVkRIchTDpAXD5kFKogCKogCKogCKogCKogCKogCKogCKogCgACFIsBCX80XGtEXKggXJ9kRPlHWPxFWPlFCX40QKgARP5kTDJECX8kWT5lCe9lWENkFKogCKogCKogCKogCKogCKogCKogCKogCgQBCG9ERLp1BeZ0XLxFCXkVWLZUSKgARFNkXJ9UWHQURD5VSLhwFONkCcNkTWogCKogCKogCKogCKogCKogCKogCgACFcNkTFYhCKogCKogCKogCKogCKogCKogCKACFEtkWZVgFs2LyUgwRP10BY9kTDx1QOhwFZl1SGlkCEtkWZZhCKogCKogCKogCKogCKogCKogCKogCKoAIUgAWP50QcNkTH4lRftEXIcRWZtkRJpAXD5kFKogCKogCKogCKogCKogCKogCKoAIgQBXD5UBWogCKogCKogCKogCKogCKogCKogCgQBXD5UBWogCKogCKogCKogCKogCKogCKogCKogCKACFcNkTFYxZv5XezlnC5l3bpl2aK42bwNGelJmf/tGFI8kReNkXI9VWH4lRftEXIcRWZtkRJpAXD5kFKogCKogCKogCKogCKogCKogCKogCKogCKogCKACFbIUBWknbldmCjZ2a8RBCPZkXD51BeZ0XLxFCXkVWLZUSKshQWogCKogCKogCKogCKogCKogCKogCKogCKogCKoAIUw1QOVgF+Z2frxnCvh3fp9WeUgwTN50SIdgXG91SchwFZl1SGlkCcNkTWogCKogCKogCKogCKogCKogCKogCKogCKogCKoAIUgQQJVkRIdwTG51QedgXG91SchwFZl1SGlkCcNkTWogCKogCKogCKogCKogCKogCKogCKogCKACFcNkTFYhCKogCKogCKogCKogCKogCKogCKogCKoAIUw1QOVgFUgQTENEWHY0SPl1BeZ0XLxFCXkVWLZUSKw1QOZhCKogCKogCKogCKogCKogCKogCKogCKogCKogCgQBCF1URGhwFeZ0SKgQTHN0BF1URGdgXG91SchwFZl1SGlkCI0kWARAGfgRdSghHe8xG1JhGeoBHYoBG112ZjVwGZ5URHNkRLxVBZ50SFZkWfVwTeNUWEklRFVkXM5kWTdEBfF0QcVQBQklWe5lQIcRSYllCNd0QWogCKogCKogCKogCKogCKogCKogCKogCKogCKoAIUggXZ9EWJdgXG91SchwFZl1SGlkCcNkTWogCKogCKogCKogCKogCKogCKogCKogCKACFIg1TOt0TCdgXG91SchwFZl1SGlkCcNkTWogCKogCKogCKogCKogCKogCKogCgQBCY9ERDtkXEVUSH4lRftEXIcRWZtkRJpAXD5kFKogCKogCKogCKogCKogCKACIUw1QOVgFKogCKogCKogCKogCKogCKACFcNkTFYBFI40QY10BS9kQIcRWZtkRJpAXD5kFKogCKogCKogCKogCKogCKogCKoAIUgQTIdgXG91SchwFZl1SGlkCcNkTWogCKogCKogCKogCKogCKoAI";
     </script>
