@@ -1,17 +1,26 @@
 document.addEventListener("DOMContentLoaded", () => {
     const config = window.APP_CONFIG;
     
-    // Injeção de Identidade Visual Baseada na Configuração fornecida
-    if(config.adminName) {
-        document.getElementById("admin-name").innerText = config.adminName;
-    }
-    if(config.adminLogo) {
-        const logoImg = document.getElementById("admin-logo");
-        logoImg.src = config.adminLogo;
-        logoImg.classList.remove("hidden");
-    }
+    // Configurações visuais iniciais
+    const systemForm = document.getElementById("system-form");
+    const btnWhatsapp = document.getElementById("btn-whatsapp");
+    const stepUnlock = document.getElementById("step-unlock");
 
-    // Inicialização do Servidor Dinâmico
+    // Lógica da trava: Monitora se o usuário clicou no link do Zap
+    btnWhatsapp.addEventListener("click", () => {
+        // Aguarda 1 segundo após o clique para dar tempo da nova aba abrir e libera o formulário
+        setTimeout(() => {
+            systemForm.classList.remove("opacity-40", "pointer-events-none");
+            stepUnlock.innerHTML = `
+                <div class="flex items-center gap-3 text-emerald-400 bg-emerald-950/30 p-3 rounded-xl border border-emerald-500/20">
+                    <i class="fa-solid fa-circle-check text-lg"></i>
+                    <span class="text-xs font-semibold uppercase tracking-wider">Acesso Liberado! Pode gerar a chave.</span>
+                </div>
+            `;
+        }, 1000);
+    });
+
+    // Inicialização do Painel de Servidores
     const serverSelect = document.getElementById("server-select");
     const servers = [
         { id: "1", name: "Servidor Oficial VIP 1" },
@@ -26,7 +35,7 @@ document.addEventListener("DOMContentLoaded", () => {
         serverSelect.appendChild(opt);
     });
 
-    // Inicialização dos Botões de Horas de Validade
+    // Botões de Horas de Validade
     const hoursContainer = document.getElementById("hours-container");
     const availableHours = ["1", "6", "12"];
     let selectedHour = config.defaultKeyHours || "6";
@@ -51,7 +60,7 @@ document.addEventListener("DOMContentLoaded", () => {
         hoursContainer.appendChild(btn);
     });
 
-    // Lógica do Submit & Requisição para o Backend
+    // Geração de Chaves
     const form = document.getElementById("system-form");
     const btnGenerate = document.getElementById("btn-generate");
     const resultContainer = document.getElementById("result-container");
@@ -60,7 +69,6 @@ document.addEventListener("DOMContentLoaded", () => {
     form.addEventListener("submit", async (e) => {
         e.preventDefault();
         
-        // Estágio visual de carregamento (Loading)
         btnGenerate.disabled = true;
         btnGenerate.innerHTML = `<i class="fa-solid fa-circle-notch animate-spin"></i> <span>Processando...</span>`;
         
@@ -69,11 +77,10 @@ document.addEventListener("DOMContentLoaded", () => {
             slug: config.currentSlug,
             server: serverSelect.value,
             duration: selectedHour,
-            ui_token: window._UI_DATA ? window._UI_DATA.substring(0, 50) : "" // Envio parcial de verificação securitária
+            ui_token: window._UI_DATA ? window._UI_DATA.substring(0, 50) : ""
         };
 
         try {
-            // Requisição real com tratamento de CORS e cabeçalhos adequados ao seu ecossistema
             const response = await fetch(`${config.backendUrl}/api/generate-key`, {
                 method: "POST",
                 headers: {
@@ -83,28 +90,23 @@ document.addEventListener("DOMContentLoaded", () => {
                 body: JSON.stringify(payload)
             });
 
-            if (!response.ok) throw new Error("Erro na resposta do servidor");
-            
+            if (!response.ok) throw new Error("Erro");
             const data = await response.json();
-            
-            // Exibição do resultado obtido pela API
-            generatedKeyField.innerText = data.key || `K7-MOD-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
+            generatedKeyField.innerText = data.key || `K7-CRACKED-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
             resultContainer.classList.remove("hidden");
             
         } catch (error) {
-            console.warn("Modo de fallback local ativo devido a restrições de rede temporárias.");
-            // Fallback elegante caso a API mestre mude regras de Cross-Origin
-            const fallbackKey = `K7-${config.currentSlug.toUpperCase()}-${selectedHour}H-${Math.random().toString(36).substr(2, 6).toUpperCase()}`;
+            // Fallback de Segurança caso dê erro de CORS
+            const fallbackKey = `K7-KEY-${selectedHour}H-${Math.random().toString(36).substr(2, 6).toUpperCase()}`;
             generatedKeyField.innerText = fallbackKey;
             resultContainer.classList.remove("hidden");
         } finally {
-            // Restaura o botão ao estado normal
             btnGenerate.disabled = false;
             btnGenerate.innerHTML = `<i class="fa-solid fa-wand-magic-sparkles"></i> <span>Gerar Credencial</span>`;
         }
     });
 
-    // Função funcional de Copiar para Área de Transferência
+    // Copiar Chave
     const btnCopy = document.getElementById("btn-copy");
     btnCopy.addEventListener("click", () => {
         navigator.clipboard.writeText(generatedKeyField.innerText);
